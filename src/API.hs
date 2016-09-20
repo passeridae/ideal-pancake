@@ -13,7 +13,7 @@ import           Servant
 
 import           Types
 
-type FullAPI = Docs :<|> API
+type FullAPI = Docs :<|> Index :<|> API
 type API = GetAllUsers :<|> GetAllBooks --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
 
 type GetAllUsers  = "users"                                         :> Get '[JSON] [User]
@@ -24,4 +24,5 @@ type GetCopies    = "books" :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSO
 type RegisterBook = "books" :> ReqBody '[JSON] Book :> PostNoContent '[JSON] ()
 type AddCopy      = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] UUID
 
-type Docs = Get '[JSON] Text
+type Docs  = "docs.md" :> Get '[PlainText] Text
+type Index = Get '[PlainText] Text

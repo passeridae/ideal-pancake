@@ -21,9 +21,11 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , aeson-casing
+                     , bytestring
                      , servant-docs
                      , servant-server
                      , mtl
+                     , network-uri
                      , text
                      , time
                      , uuid
