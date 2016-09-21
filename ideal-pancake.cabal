@@ -24,6 +24,7 @@ library
                      , bytestring
                      , servant-docs
                      , servant-server
+                     , http-types
                      , mtl
                      , network-uri
                      , text

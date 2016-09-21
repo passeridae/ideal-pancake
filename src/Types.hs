@@ -77,6 +77,13 @@ acrToCopy req@AddCopyRequest{..} = do
   copyId <- nextRandom
   return $ Copy acrBook (InternalId copyId) acrNotes Available
 
+data AddUserRequest
+data AddUserResponse
+data DeleteUserRequest
+data DeleteUserResponse
+data UpdateUserRequest
+data UpdateUserResponse
+
 data User = User
   { name   :: Name
   , userId :: InternalId

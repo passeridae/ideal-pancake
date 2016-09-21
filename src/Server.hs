@@ -1,21 +1,22 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Server where
 
 import           Control.Monad.Except
 import           Data.Aeson
 import           Data.Aeson.TH
-import qualified Data.ByteString.Char8    as BSC
-import           Data.Text                (Text)
-import qualified Data.Text                as T
+import qualified Data.ByteString.Char8     as BSC
+import           Data.Text                 (Text)
+import qualified Data.Text                 as T
 import           Data.Time
 import           Data.UUID.V4
+import           Network.HTTP.Types.Header
 import           Network.URI
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
-import           Servant.Docs             hiding (API)
+import           Servant.Docs              hiding (API)
 import           Servant.Server
 
 import           API
@@ -50,6 +51,5 @@ getAllBooks = do
   return [Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now]
 
 index :: ExceptT ServantErr IO a
-index = do
-  let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
-  throwError $ err301{errHeaders=("Location", BSC.pack $ show redirectURI):errHeaders err301}
+index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
+        in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
