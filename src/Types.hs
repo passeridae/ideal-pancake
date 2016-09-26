@@ -24,14 +24,14 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (Generic, Show, IsString, ToJSON)
+  deriving (Generic, Eq, Ord, Show, IsString, ToJSON)
 
 instance ToSample Name where
   toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
@@ -87,7 +87,7 @@ data UpdateUserResponse
 data User = User
   { name   :: Name
   , userId :: InternalId
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON User where
   toJSON = genericToJSON $ aesonDrop 0 snakeCase
