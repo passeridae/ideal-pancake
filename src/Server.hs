@@ -4,20 +4,16 @@
 module Server where
 
 import           Control.Monad.Except
-import           Data.Aeson
-import           Data.Aeson.TH
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
 import           Data.Time
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
-import           Network.URI
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 import           Servant.Docs              hiding (API)
-import           Servant.Server
 
 import           API
 import           Types

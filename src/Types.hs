@@ -8,7 +8,6 @@ module Types where
 import           Control.Monad
 import           Data.Aeson
 import           Data.Aeson.Casing
-import           Data.Maybe
 import           Data.Proxy
 import           Data.String       hiding (fromString)
 import           Data.Text         (Text)
@@ -74,7 +73,7 @@ data AddCopyRequest = AddCopyRequest
   } deriving (Generic, Show)
 
 acrToCopy :: AddCopyRequest -> IO Copy
-acrToCopy req@AddCopyRequest{..} = do
+acrToCopy AddCopyRequest{..} = do
   copyId <- nextRandom
   return $ Copy acrBook (InternalId copyId) acrNotes Available
 
