@@ -27,6 +27,7 @@ library
                      , http-types
                      , mtl
                      , network-uri
+                     , postgresql-simple 
                      , text
                      , time
                      , uuid
