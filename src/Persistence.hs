@@ -49,6 +49,10 @@ instance Store InMemory STM where
 data Postgres
 
 
+safeHead :: [a] -> Maybe a
+safeHead (x:_) = Just x
+safeHead _ = Nothing
+
 instance Store Postgres IO where
   data Conn Postgres = PGConn (Pool Connection)
   data Conf Postgres = PGConf ConnectInfo
@@ -60,18 +64,14 @@ instance Store Postgres IO where
   addUser (PGConn pool) (User (Name un) ui) = withResource pool $ \conn -> void $ execute conn "insert into users (name,id) values (?,?)" (un,unInternalId ui)
   getUserById (PGConn pool) (InternalId internalId) = withResource pool $ \conn -> do
     users <- query conn "select * from users where internalId = ?" (Only internalId)
-    return $ case users of 
-      (u:_) -> Just u
-      [] -> Nothing
+    return $ safeHead users  
   getUserByName (PGConn pool) (Name un) = withResource pool $ \conn -> do
     users <- query conn "select * from users where name = ?" (Only un)
-    return $ case users of 
-      (u:_) -> Just u 
-      [] -> Nothing
+    return $ safeHead users  
   getAllUsers (PGConn pool) = withResource pool $ \conn -> do
     query_ conn "select * from users"
 
 -- | TODO: Implement
 --   Source a file, template in the sql, whatever
 initSql :: Query
-initSql = undefined
+initSql = "create table users (internalId varchar 200, name varchar 200);"
