@@ -14,6 +14,8 @@ import           Data.Text         (Text)
 import           Data.Time
 import           Data.UUID
 import           Data.UUID.V4
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.FromField
 import           GHC.Generics
 import           Servant.Docs
 import           System.IO.Unsafe
@@ -24,14 +26,14 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (Generic, Eq, Ord, Show, IsString, ToJSON)
+  deriving (FromField, Generic, Eq, Ord, Show, IsString, ToJSON)
 
 instance ToSample Name where
   toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (Generic, Eq, Ord, Show)
+  } deriving (FromField, Generic, Eq, Ord, Show)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
@@ -97,3 +99,6 @@ instance ToSample User where
     (_, name)       <- toSamples Proxy
     (_, identifier) <- toSamples Proxy
     samples $ return (User name identifier)
+
+instance FromRow User where
+  fromRow = User <$> field <*> field

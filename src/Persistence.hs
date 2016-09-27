@@ -48,6 +48,7 @@ instance Store InMemory STM where
 
 data Postgres
 
+
 instance Store Postgres IO where
   data Conn Postgres = PGConn (Pool Connection)
   data Conf Postgres = PGConf ConnectInfo
@@ -60,16 +61,15 @@ instance Store Postgres IO where
   getUserById (PGConn pool) (InternalId internalId) = withResource pool $ \conn -> do
     users <- query conn "select * from users where internalId = ?" (Only internalId)
     return $ case users of 
-      ((un,ui):_) -> Just $ User (Name un) (InternalId ui)
+      (u:_) -> Just u
       [] -> Nothing
   getUserByName (PGConn pool) (Name un) = withResource pool $ \conn -> do
     users <- query conn "select * from users where name = ?" (Only un)
     return $ case users of 
-      ((un',ui):_) -> Just $ User (Name un') (InternalId ui)
+      (u:_) -> Just u 
       [] -> Nothing
   getAllUsers (PGConn pool) = withResource pool $ \conn -> do
-    users <- query_ conn "select * from users"
-    return $ map (\(un,ui) -> User (Name un) (InternalId ui)) users
+    query_ conn "select * from users"
 
 -- | TODO: Implement
 --   Source a file, template in the sql, whatever
