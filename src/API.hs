@@ -3,12 +3,8 @@
 
 module API where
 
-import           Data.Aeson
-import           Data.Aeson.TH
-import           Data.Text                (Text)
+import           Data.Text (Text)
 import           Data.UUID
-import           Network.Wai
-import           Network.Wai.Handler.Warp
 import           Servant
 
 import           Types

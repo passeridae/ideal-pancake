@@ -5,9 +5,10 @@
 
 module Types where
 
+import           Control.Monad
 import           Data.Aeson
 import           Data.Aeson.Casing
-import           Data.Maybe
+import           Data.Proxy
 import           Data.String       hiding (fromString)
 import           Data.Text         (Text)
 import           Data.Time
@@ -23,23 +24,22 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (Generic, Show, IsString)
-
-instance ToJSON Name where
-  toJSON = genericToJSON $ aesonDrop 0 snakeCase
+  deriving (Generic, Eq, Ord, Show, IsString, ToJSON)
 
 instance ToSample Name where
-  toSamples _ = singleSample (Name "Bob mcBobFace")
+  toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
 
 instance ToSample InternalId where
-  toSamples _ = singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
+  toSamples _ = do
+    let ids = unsafePerformIO $ replicateM 10 nextRandom--singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
+    samples (map InternalId ids)
 
 data CopyStatus = Available
                 | OnLoan User
@@ -73,7 +73,7 @@ data AddCopyRequest = AddCopyRequest
   } deriving (Generic, Show)
 
 acrToCopy :: AddCopyRequest -> IO Copy
-acrToCopy req@AddCopyRequest{..} = do
+acrToCopy AddCopyRequest{..} = do
   copyId <- nextRandom
   return $ Copy acrBook (InternalId copyId) acrNotes Available
 
@@ -87,9 +87,13 @@ data UpdateUserResponse
 data User = User
   { name   :: Name
   , userId :: InternalId
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON User where
   toJSON = genericToJSON $ aesonDrop 0 snakeCase
 
-instance ToSample User
+instance ToSample User where
+  toSamples _ = do
+    (_, name)       <- toSamples Proxy
+    (_, identifier) <- toSamples Proxy
+    samples $ return (User name identifier)
