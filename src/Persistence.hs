@@ -1,11 +1,13 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
 module Persistence where
 
 import           Control.Concurrent.STM
 import           Control.Monad
+import           Data.FileEmbed
 import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
 import           Data.Pool
@@ -66,22 +68,22 @@ instance Store Postgres IO where
   initStore         (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
   -- | Users
   addUser           (PGConn pool) user = withResource pool $ \conn ->
-    void $ execute conn "insert into users (name,id) values (?,?)" user
+    void $ execute conn "INSERT into users (name,id) VALUES (?,?)" user
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
-    safeHead <$> query conn "select * from users where internalId = ?" (Only internalId)
+    safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
   getUserByName     (PGConn pool) (Name un) = withResource pool $ \conn ->
-    safeHead <$> query conn "select * from users where name = ?" (Only un)
+    safeHead <$> query conn "SELECT * FROM users WHERE name = ?" (Only un)
   getAllUsers       (PGConn pool) = withResource pool $ \conn ->
-    query_ conn "select * from users"
+    query_ conn "SELECT * FROM users"
   -- | Books
   addBook           (PGConn pool) book = withResource pool $ \conn -> void $
-    execute conn "insert into books (isbn,title,authors,publishers,yearOfPublication) values (?,?,?,?,?)" book
+    execute conn "INSERT into books (isbn,title,authors,publishers,yearOfPublication) VALUES (?,?,?,?,?)" book
   getBookByIsbn     (PGConn pool) isbn = withResource pool $ \conn ->
-    safeHead <$> query conn "select * from books where isbn = ?" (Only isbn)
+    safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
-    query_ conn "select * from books"
+    query_ conn "SELECT * FROM books"
 
 -- | TODO: Implement
 --   Source a file, template in the sql, whatever
 initSql :: Query
-initSql = "create table users (name varchar 200,internalId UUID) ;"
+initSql = $(embedStringFile "static/db.sql") 
