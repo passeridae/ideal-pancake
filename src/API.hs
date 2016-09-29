@@ -10,7 +10,8 @@ import           Servant
 import           Types
 
 type FullAPI = Docs :<|> Index :<|> API
-type API = GetAllUsers :<|> GetAllBooks :<|> AddUser --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
+type API = GetAllUsers :<|> AddUser
+      :<|> GetAllBooks :<|> AddBook --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
 
 -- | Users
 
@@ -22,10 +23,10 @@ type AddUser      = "users"                           :> ReqBody '[JSON] AddUser
 
 -- | Books
 
-type GetAllBooks  = "books"                                         :> Get '[JSON] [Book]
-type GetBook      = "books" :> Capture "book_isbn" ISBN             :> Get '[JSON]  Book
-type GetCopies    = "books" :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
-type RegisterBook = "books" :> ReqBody '[JSON] Book     :> PostNoContent '[JSON] ()
+type GetAllBooks = "books"                                         :> Get '[JSON] [Book]
+type GetBook     = "books" :> Capture "book_isbn" ISBN             :> Get '[JSON]  Book
+type GetCopies   = "books" :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
+type AddBook     = "books" :> ReqBody '[JSON] Book     :> PostNoContent '[JSON] NoContent
 
 -- | Copies
 type AddCopy      = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] UUID

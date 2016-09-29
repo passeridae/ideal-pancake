@@ -40,7 +40,8 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = enter (runReaderTNat conf) (serveDocs :<|> index :<|> getAllUsers :<|> getAllBooks :<|> addUser)
+server conf = enter (runReaderTNat conf)
+  (serveDocs :<|> index :<|> getAllUsers :<|> addUser :<|> getAllBooks :<|> addBook)
 
 serveDocs :: Pancake Text
 serveDocs = return $ T.pack $ markdown $ docs $ pretty api
@@ -59,8 +60,14 @@ addUser AddUserRequest{..} = do
 
 getAllBooks :: Pancake [Book]
 getAllBooks = do
-  now <- liftIO getCurrentTime
-  return [Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now]
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.getAllBooks serverStore
+
+addBook :: Book -> Pancake NoContent
+addBook book = do
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.addBook serverStore book
+  return NoContent
 
 index :: Pancake a
 index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
