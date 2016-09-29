@@ -12,11 +12,13 @@ import           Data.Proxy
 import           Data.String       hiding (fromString)
 import           Data.Text         (Text)
 import           Data.Time
+import           Data.Vector(Vector)
 import qualified Data.Vector       as V
 import           Data.UUID
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.FromField
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Servant.Docs
 import           System.IO.Unsafe
@@ -66,6 +68,8 @@ instance ToSample Book where
 instance FromRow Book where
   fromRow = Book <$> field <*> field <*> field <*> field <*> field 
 
+instance ToRow Book where
+  toRow b = toRow (isbn b,title b, authors b, publishers b, yearOfPublication b)
 data Copy = Copy
   { copyOf     :: ISBN
   , copyId     :: InternalId
@@ -106,3 +110,6 @@ instance ToSample User where
 
 instance FromRow User where
   fromRow = User <$> field <*> field
+
+instance ToRow User where
+  toRow (User (Name name) (InternalId iid)) = toRow (name, iid)

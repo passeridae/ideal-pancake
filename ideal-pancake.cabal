@@ -30,7 +30,7 @@ library
                      , http-types
                      , mtl
                      , network-uri
-                     , postgresql-simple 
+                     , postgresql-simple
                      , stm
                      , text
                      , time

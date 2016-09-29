@@ -10,7 +10,8 @@ import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
 import           Data.Pool
 import           Database.PostgreSQL.Simple
-import           Data.Vector
+import           Data.Vector(Vector)
+import qualified Data.Vector as V
 
 import           Types
 
@@ -65,7 +66,7 @@ instance Store Postgres IO where
   initConnection (PGConf connInfo) = PGConn <$> createPool (connect connInfo) close 1 5 4
   destroyConnection (PGConn pool) = destroyAllResources pool
   initStore (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
-  addUser (PGConn pool) (User (Name un) ui) = withResource pool $ \conn -> void $ execute conn "insert into users (name,id) values (?,?)" (un,unInternalId ui)
+  addUser (PGConn pool) user = withResource pool $ \conn -> void $ execute conn "insert into users (name,id) values (?,?)" user
   getUserById (PGConn pool) (InternalId internalId) = withResource pool $ \conn -> do
     users <- query conn "select * from users where internalId = ?" (Only internalId)
     return $ safeHead users  
@@ -74,9 +75,8 @@ instance Store Postgres IO where
     return $ safeHead users  
   getAllUsers (PGConn pool) = withResource pool $ \conn -> do
     query_ conn "select * from users"
-  addBook (PGConn pool) b = withResource pool $ \conn -> void $
-    execute conn "insert into books (isbn,title,authors,publishers,yearOfPublication) values (?,?,?,?,?)" 
-      (isbn b,title b, authors b, publishers b, yearOfPublication b)
+  addBook (PGConn pool) book = withResource pool $ \conn -> void $
+    execute conn "insert into books (isbn,title,authors,publishers,yearOfPublication) values (?,?,?,?,?)" book
   getBookByIsbn (PGConn pool) isbn = withResource pool $ \conn -> do
     books <- query conn "select * from books where isbn = ?" (Only isbn)
     return $ safeHead books 
