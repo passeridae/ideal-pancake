@@ -67,6 +67,9 @@ data Book = Book
 instance ToJSON Book where
   toJSON = genericToJSON $ aesonDrop 0 snakeCase
 
+instance FromJSON Book where
+  parseJSON = genericParseJSON $ aesonDrop 0 snakeCase
+
 instance ToSample Book where
   toSamples _ = let now = unsafePerformIO getCurrentTime
                 in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now
