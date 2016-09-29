@@ -29,7 +29,7 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (FromField, Generic, Eq, Ord, Show, IsString, ToJSON)
+  deriving (FromField, Generic, Eq, Ord, Show, IsString, FromJSON, ToJSON)
 
 instance ToSample Name where
   toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
@@ -40,6 +40,12 @@ newtype InternalId = InternalId
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
+
+instance FromJSON InternalId where
+  parseJSON = withText "InternalId" $ \x ->
+    case fromText x of
+      Nothing -> fail "Invalid UUID"
+      Just u -> return $ InternalId u
 
 instance ToSample InternalId where
   toSamples _ = do
@@ -87,8 +93,6 @@ acrToCopy AddCopyRequest{..} = do
   copyId <- nextRandom
   return $ Copy acrBook (InternalId copyId) acrNotes Available
 
-data AddUserRequest
-data AddUserResponse
 data DeleteUserRequest
 data DeleteUserResponse
 data UpdateUserRequest
@@ -113,3 +117,33 @@ instance FromRow User where
 
 instance ToRow User where
   toRow (User (Name name) (InternalId iid)) = toRow (name, iid)
+
+data AddUserRequest = AddUserRequest
+  { aureqName :: Name
+  } deriving (Generic, Show, Ord, Eq)
+
+instance ToJSON AddUserRequest where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON AddUserRequest where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+instance ToSample AddUserRequest where
+  toSamples _ = do
+    (_, name) <- toSamples Proxy
+    samples $ return $ AddUserRequest name
+
+data AddUserResponse = AddUserResponse
+  { aurespId :: InternalId
+  } deriving (Generic, Show, Ord, Eq)
+
+instance ToJSON AddUserResponse where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON AddUserResponse where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+instance ToSample AddUserResponse where
+  toSamples _ = do
+    (_, iid) <- toSamples Proxy
+    samples $ return $ AddUserResponse iid
