@@ -1,5 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TemplateHaskell       #-}
 
@@ -37,19 +38,27 @@ data InMemory
 -- | Empty X data decl
 data X
 
+data InMemoryStore = InMemoryStore
+  { users :: TVar (Map InternalId User)
+  , books :: TVar (Map ISBN Book)
+  }
+
 instance Store InMemory STM where
-  data Conn InMemory = InMemoryVar (TVar (Map InternalId User))
+  data Conn InMemory = InMemoryVar InMemoryStore
   data Conf InMemory = X
 
   -- | No fancy connection stuff required
-  initConnection _ = InMemoryVar <$> newTVar mempty
+  initConnection _ = InMemoryVar <$> (InMemoryStore <$> newTVar mempty <*> newTVar mempty)
   destroyConnection _ = pure ()
   initStore _ = pure ()
 
-  addUser     (InMemoryVar var) user  = modifyTVar var (M.insert (userId user) user)
-  getUserById    (InMemoryVar var) ident = M.lookup ident <$> readTVar var
-  getUserByName = undefined
-  getAllUsers (InMemoryVar var)       = M.elems <$> readTVar var
+  addUser       (InMemoryVar InMemoryStore{..}) user  = modifyTVar users (M.insert (userId user) user)
+  getUserById   (InMemoryVar InMemoryStore{..}) ident = M.lookup ident <$> readTVar users
+  getUserByName (InMemoryVar InMemoryStore{..}) name2 = safeHead <$> filter ((== name2) . name) <$> M.elems <$> readTVar users
+  getAllUsers   (InMemoryVar InMemoryStore{..})       = M.elems <$> readTVar users
+  addBook       (InMemoryVar InMemoryStore{..}) book  = modifyTVar books (M.insert (isbn book) book)
+  getBookByIsbn (InMemoryVar InMemoryStore{..}) ident = M.lookup ident <$> readTVar books
+  getAllBooks   (InMemoryVar InMemoryStore{..})       = M.elems <$> readTVar books
 
 data Postgres
 
