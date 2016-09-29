@@ -9,15 +9,15 @@ import           Control.Monad
 import           Data.Aeson
 import           Data.Aeson.Casing
 import           Data.Proxy
-import           Data.String       hiding (fromString)
-import           Data.Text         (Text)
+import           Data.String                          hiding (fromString)
+import           Data.Text                            (Text)
 import           Data.Time
-import           Data.Vector(Vector)
-import qualified Data.Vector       as V
 import           Data.UUID
 import           Data.UUID.V4
+import           Data.Vector                          (Vector)
+import qualified Data.Vector                          as V
+import           Database.PostgreSQL.Simple.FromField hiding (name)
 import           Database.PostgreSQL.Simple.FromRow
-import           Database.PostgreSQL.Simple.FromField
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Servant.Docs
@@ -53,8 +53,8 @@ data CopyStatus = Available
 data Book = Book
   { isbn              :: ISBN
   , title             :: Title
-  , authors           :: V.Vector Author
-  , publishers        :: V.Vector Publisher
+  , authors           :: Vector Author
+  , publishers        :: Vector Publisher
   , yearOfPublication :: UTCTime
   } deriving (Generic, Show)
 
@@ -66,7 +66,7 @@ instance ToSample Book where
                 in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now
 
 instance FromRow Book where
-  fromRow = Book <$> field <*> field <*> field <*> field <*> field 
+  fromRow = Book <$> field <*> field <*> field <*> field <*> field
 
 instance ToRow Book where
   toRow b = toRow (isbn b,title b, authors b, publishers b, yearOfPublication b)

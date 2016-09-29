@@ -1,5 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeFamilies          #-}
 
 module Persistence where
@@ -10,8 +10,6 @@ import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
 import           Data.Pool
 import           Database.PostgreSQL.Simple
-import           Data.Vector(Vector)
-import qualified Data.Vector as V
 
 import           Types
 
@@ -63,25 +61,26 @@ instance Store Postgres IO where
   data Conf Postgres = PGConf ConnectInfo
 
    -- | 1 stripe, 5 second unused connection lifetime, 4 max connections to DB
-  initConnection (PGConf connInfo) = PGConn <$> createPool (connect connInfo) close 1 5 4
+  initConnection    (PGConf connInfo) = PGConn <$> createPool (connect connInfo) close 1 5 4
   destroyConnection (PGConn pool) = destroyAllResources pool
-  initStore (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
-  addUser (PGConn pool) user = withResource pool $ \conn -> void $ execute conn "insert into users (name,id) values (?,?)" user
-  getUserById (PGConn pool) (InternalId internalId) = withResource pool $ \conn -> do
-    users <- query conn "select * from users where internalId = ?" (Only internalId)
-    return $ safeHead users  
-  getUserByName (PGConn pool) (Name un) = withResource pool $ \conn -> do
-    users <- query conn "select * from users where name = ?" (Only un)
-    return $ safeHead users  
-  getAllUsers (PGConn pool) = withResource pool $ \conn -> do
+  initStore         (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
+  -- | Users
+  addUser           (PGConn pool) user = withResource pool $ \conn ->
+    void $ execute conn "insert into users (name,id) values (?,?)" user
+  getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
+    safeHead <$> query conn "select * from users where internalId = ?" (Only internalId)
+  getUserByName     (PGConn pool) (Name un) = withResource pool $ \conn ->
+    safeHead <$> query conn "select * from users where name = ?" (Only un)
+  getAllUsers       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "select * from users"
-  addBook (PGConn pool) book = withResource pool $ \conn -> void $
+  -- | Books
+  addBook           (PGConn pool) book = withResource pool $ \conn -> void $
     execute conn "insert into books (isbn,title,authors,publishers,yearOfPublication) values (?,?,?,?,?)" book
-  getBookByIsbn (PGConn pool) isbn = withResource pool $ \conn -> do
-    books <- query conn "select * from books where isbn = ?" (Only isbn)
-    return $ safeHead books 
-  getAllBooks (PGConn pool) = undefined  
-  
+  getBookByIsbn     (PGConn pool) isbn = withResource pool $ \conn ->
+    safeHead <$> query conn "select * from books where isbn = ?" (Only isbn)
+  getAllBooks       (PGConn pool) = withResource pool $ \conn ->
+    query_ conn "select * from books"
+
 -- | TODO: Implement
 --   Source a file, template in the sql, whatever
 initSql :: Query
