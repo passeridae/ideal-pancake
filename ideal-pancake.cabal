@@ -25,6 +25,7 @@ library
                      , aeson-casing
                      , bytestring
                      , containers
+                     , file-embed
                      , resource-pool
                      , servant-docs
                      , servant-server
