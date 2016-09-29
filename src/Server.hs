@@ -8,6 +8,7 @@ import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
 import           Data.Time
+import qualified Data.Vector               as V
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
 import           Network.Wai
@@ -44,7 +45,7 @@ getAllUsers = do
 getAllBooks :: ExceptT ServantErr IO [Book]
 getAllBooks = do
   now <- liftIO getCurrentTime
-  return [Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now]
+  return [Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now]
 
 index :: ExceptT ServantErr IO a
 index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)

@@ -12,8 +12,13 @@ import           Data.Proxy
 import           Data.String       hiding (fromString)
 import           Data.Text         (Text)
 import           Data.Time
+import           Data.Vector(Vector)
+import qualified Data.Vector       as V
 import           Data.UUID
 import           Data.UUID.V4
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.FromField
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Servant.Docs
 import           System.IO.Unsafe
@@ -24,14 +29,14 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (Generic, Eq, Ord, Show, IsString, ToJSON)
+  deriving (FromField, Generic, Eq, Ord, Show, IsString, ToJSON)
 
 instance ToSample Name where
   toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (Generic, Eq, Ord, Show)
+  } deriving (FromField, Generic, Eq, Ord, Show)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
@@ -48,8 +53,8 @@ data CopyStatus = Available
 data Book = Book
   { isbn              :: ISBN
   , title             :: Title
-  , authors           :: [Author]
-  , publishers        :: [Publisher]
+  , authors           :: V.Vector Author
+  , publishers        :: V.Vector Publisher
   , yearOfPublication :: UTCTime
   } deriving (Generic, Show)
 
@@ -58,8 +63,13 @@ instance ToJSON Book where
 
 instance ToSample Book where
   toSamples _ = let now = unsafePerformIO getCurrentTime
-                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now
+                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now
 
+instance FromRow Book where
+  fromRow = Book <$> field <*> field <*> field <*> field <*> field 
+
+instance ToRow Book where
+  toRow b = toRow (isbn b,title b, authors b, publishers b, yearOfPublication b)
 data Copy = Copy
   { copyOf     :: ISBN
   , copyId     :: InternalId
@@ -97,3 +107,9 @@ instance ToSample User where
     (_, name)       <- toSamples Proxy
     (_, identifier) <- toSamples Proxy
     samples $ return (User name identifier)
+
+instance FromRow User where
+  fromRow = User <$> field <*> field
+
+instance ToRow User where
+  toRow (User (Name name) (InternalId iid)) = toRow (name, iid)
