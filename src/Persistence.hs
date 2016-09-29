@@ -10,6 +10,7 @@ import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
 import           Data.Pool
 import           Database.PostgreSQL.Simple
+import           Data.Vector
 
 import           Types
 
@@ -26,6 +27,9 @@ class Monad m => Store t m where
   getUserById         :: Conn t -> InternalId -> m (Maybe User)
   getUserByName       :: Conn t -> Name -> m (Maybe User)
   getAllUsers         :: Conn t -> m [User]
+  addBook             :: Conn t -> Book -> m ()
+  getBookByIsbn       :: Conn t -> ISBN -> m (Maybe Book)
+  getAllBooks         :: Conn t -> m [Book]
 
 -- | Example InMemory implementation
 data InMemory
@@ -70,8 +74,15 @@ instance Store Postgres IO where
     return $ safeHead users  
   getAllUsers (PGConn pool) = withResource pool $ \conn -> do
     query_ conn "select * from users"
-
+  addBook (PGConn pool) b = withResource pool $ \conn -> void $
+    execute conn "insert into books (isbn,title,authors,publishers,yearOfPublication) values (?,?,?,?,?)" 
+      (isbn b,title b, authors b, publishers b, yearOfPublication b)
+  getBookByIsbn (PGConn pool) isbn = withResource pool $ \conn -> do
+    books <- query conn "select * from books where isbn = ?" (Only isbn)
+    return $ safeHead books 
+  getAllBooks (PGConn pool) = undefined  
+  
 -- | TODO: Implement
 --   Source a file, template in the sql, whatever
 initSql :: Query
-initSql = "create table users (internalId varchar 200, name varchar 200);"
+initSql = "create table users (name varchar 200,internalId UUID) ;"

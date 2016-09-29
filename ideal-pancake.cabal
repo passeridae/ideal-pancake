@@ -35,6 +35,7 @@ library
                      , text
                      , time
                      , uuid
+                     , vector
                      , wai
                      , warp
   ghc-options:         -Wall

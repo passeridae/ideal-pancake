@@ -12,6 +12,7 @@ import           Data.Proxy
 import           Data.String       hiding (fromString)
 import           Data.Text         (Text)
 import           Data.Time
+import qualified Data.Vector       as V
 import           Data.UUID
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromRow
@@ -50,8 +51,8 @@ data CopyStatus = Available
 data Book = Book
   { isbn              :: ISBN
   , title             :: Title
-  , authors           :: [Author]
-  , publishers        :: [Publisher]
+  , authors           :: V.Vector Author
+  , publishers        :: V.Vector Publisher
   , yearOfPublication :: UTCTime
   } deriving (Generic, Show)
 
@@ -60,7 +61,10 @@ instance ToJSON Book where
 
 instance ToSample Book where
   toSamples _ = let now = unsafePerformIO getCurrentTime
-                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now
+                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now
+
+instance FromRow Book where
+  fromRow = Book <$> field <*> field <*> field <*> field <*> field 
 
 data Copy = Copy
   { copyOf     :: ISBN
