@@ -1,8 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Persistence where
 
@@ -11,8 +11,10 @@ import           Control.Monad
 import           Data.FileEmbed
 import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
+import           Data.Monoid
 import           Data.Pool
 import           Database.PostgreSQL.Simple
+import           Prelude                    hiding (id)
 
 import           Types
 
@@ -32,6 +34,7 @@ class Monad m => Store t m where
   addBook             :: Conn t -> Book -> m ()
   getBookByIsbn       :: Conn t -> ISBN -> m (Maybe Book)
   getAllBooks         :: Conn t -> m [Book]
+  addCopy             :: Conn t -> Copy -> m Bool
 
 -- | Example InMemory implementation
 data InMemory
@@ -39,8 +42,9 @@ data InMemory
 data X
 
 data InMemoryStore = InMemoryStore
-  { users :: TVar (Map InternalId User)
-  , books :: TVar (Map ISBN Book)
+  { users  :: TVar (Map InternalId User)
+  , books  :: TVar (Map ISBN Book)
+  , copies :: TVar (Map ISBN [Copy])
   }
 
 instance Store InMemory STM where
@@ -48,17 +52,24 @@ instance Store InMemory STM where
   data Conf InMemory = X
 
   -- | No fancy connection stuff required
-  initConnection _ = InMemoryVar <$> (InMemoryStore <$> newTVar mempty <*> newTVar mempty)
+  initConnection _ = InMemoryVar <$> (InMemoryStore <$> newTVar mempty <*> newTVar mempty <*> newTVar mempty)
   destroyConnection _ = pure ()
   initStore _ = pure ()
 
-  addUser       (InMemoryVar InMemoryStore{..}) user  = modifyTVar users (M.insert (userId user) user)
-  getUserById   (InMemoryVar InMemoryStore{..}) ident = M.lookup ident <$> readTVar users
-  getUserByName (InMemoryVar InMemoryStore{..}) name2 = safeHead <$> filter ((== name2) . name) <$> M.elems <$> readTVar users
-  getAllUsers   (InMemoryVar InMemoryStore{..})       = M.elems <$> readTVar users
-  addBook       (InMemoryVar InMemoryStore{..}) book  = modifyTVar books (M.insert (isbn book) book)
-  getBookByIsbn (InMemoryVar InMemoryStore{..}) ident = M.lookup ident <$> readTVar books
-  getAllBooks   (InMemoryVar InMemoryStore{..})       = M.elems <$> readTVar books
+  addUser       (InMemoryVar InMemoryStore{..}) user@User{..} = modifyTVar users (M.insert id user)
+  getUserById   (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar users
+  getUserByName (InMemoryVar InMemoryStore{..}) name2         = safeHead . filter (\User{..} -> name == name2) . M.elems <$> readTVar users
+  getAllUsers   (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar users
+  addBook       (InMemoryVar InMemoryStore{..}) book          = modifyTVar books (M.insert (isbn book) book)
+  getBookByIsbn (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar books
+  getAllBooks   (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar books
+  addCopy       var@(InMemoryVar InMemoryStore{..}) copy@Copy{..} = do
+    book <- getBookByIsbn var bookIsbn
+    case book of
+      Nothing -> pure False
+      Just _  -> do
+        modifyTVar copies $ M.insertWith (<>) bookIsbn [copy]
+        pure True
 
 data Postgres
 
@@ -91,8 +102,7 @@ instance Store Postgres IO where
     safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM books"
+  addCopy = error "NYI"
 
--- | TODO: Implement
---   Source a file, template in the sql, whatever
 initSql :: Query
-initSql = $(embedStringFile "static/db.sql") 
+initSql = $(embedStringFile "static/db.sql")
