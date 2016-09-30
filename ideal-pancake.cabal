@@ -20,6 +20,10 @@ library
                        Persistence
                        Server
                        Types
+                       Types.Book
+                       Types.Common
+                       Types.Copy
+                       Types.User
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , aeson-casing
