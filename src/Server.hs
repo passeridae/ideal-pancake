@@ -1,32 +1,37 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
-
+{-# LANGUAGE RecordWildCards   #-}
 module Server where
 
+import           Control.Concurrent.STM
 import           Control.Monad.Except
-import           Data.Aeson
-import           Data.Aeson.TH
+import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
 import           Data.Time
 import           Data.UUID.V4
+import qualified Data.Vector               as V
 import           Network.HTTP.Types.Header
-import           Network.URI
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 import           Servant.Docs              hiding (API)
-import           Servant.Server
 
 import           API
+import           Config
+import qualified Persistence               as P
 import           Types
 
-startApp :: IO ()
-startApp = run 8080 app
+type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
-app :: Application
-app = serve fullApi server
+startApp :: IO ()
+startApp = do
+  conn <- atomically $ P.initConnection P.X
+  run 8080 (app $ ServerConfig conn)
+
+app :: ServerConfig -> Application
+app conf = serve fullApi (server conf)
 
 fullApi :: Proxy FullAPI
 fullApi = Proxy
@@ -34,22 +39,36 @@ fullApi = Proxy
 api :: Proxy API
 api = Proxy
 
-server :: Server FullAPI
-server = serveDocs :<|> index :<|> getAllUsers :<|> getAllBooks
+server :: ServerConfig -> Server FullAPI
+server conf = enter (runReaderTNat conf)
+  (serveDocs :<|> index :<|> getAllUsers :<|> addUser :<|> getAllBooks :<|> addBook)
 
-serveDocs :: ExceptT ServantErr IO Text
+serveDocs :: Pancake Text
 serveDocs = return $ T.pack $ markdown $ docs $ pretty api
 
-getAllUsers :: ExceptT ServantErr IO [User]
+getAllUsers :: Pancake [User]
 getAllUsers = do
-  urAWizard <- liftIO nextRandom
-  return [User "Harry Potter" (InternalId urAWizard)]
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.getAllUsers serverStore
 
-getAllBooks :: ExceptT ServantErr IO [Book]
+addUser :: AddUserRequest -> Pancake AddUserResponse
+addUser AddUserRequest{..} = do
+  ServerConfig{..} <- ask
+  uuid <- liftIO $ InternalId <$> nextRandom
+  liftIO $ atomically $ P.addUser serverStore (User aureqName uuid)
+  return $ AddUserResponse uuid
+
+getAllBooks :: Pancake [Book]
 getAllBooks = do
-  now <- liftIO getCurrentTime
-  return [Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now]
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.getAllBooks serverStore
 
-index :: ExceptT ServantErr IO a
+addBook :: Book -> Pancake NoContent
+addBook book = do
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.addBook serverStore book
+  return NoContent
+
+index :: Pancake a
 index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
         in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}

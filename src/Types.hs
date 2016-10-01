@@ -5,14 +5,20 @@
 
 module Types where
 
+import           Control.Monad
 import           Data.Aeson
 import           Data.Aeson.Casing
-import           Data.Maybe
-import           Data.String       hiding (fromString)
-import           Data.Text         (Text)
+import           Data.Proxy
+import           Data.String                          hiding (fromString)
+import           Data.Text                            (Text)
 import           Data.Time
 import           Data.UUID
 import           Data.UUID.V4
+import           Data.Vector                          (Vector)
+import qualified Data.Vector                          as V
+import           Database.PostgreSQL.Simple.FromField hiding (name)
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Servant.Docs
 import           System.IO.Unsafe
@@ -23,23 +29,28 @@ type Publisher = Text
 type Title = Text
 
 newtype Name = Name Text
-  deriving (Generic, Show, IsString)
-
-instance ToJSON Name where
-  toJSON = genericToJSON $ aesonDrop 0 snakeCase
+  deriving (FromField, Generic, Eq, Ord, Show, IsString, FromJSON, ToJSON)
 
 instance ToSample Name where
-  toSamples _ = singleSample (Name "Bob mcBobFace")
+  toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (Generic, Show)
+  } deriving (FromField, Generic, Eq, Ord, Show)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
 
+instance FromJSON InternalId where
+  parseJSON = withText "InternalId" $ \x ->
+    case fromText x of
+      Nothing -> fail "Invalid UUID"
+      Just u -> return $ InternalId u
+
 instance ToSample InternalId where
-  toSamples _ = singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
+  toSamples _ = do
+    let ids = unsafePerformIO $ replicateM 10 nextRandom--singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
+    samples (map InternalId ids)
 
 data CopyStatus = Available
                 | OnLoan User
@@ -48,18 +59,26 @@ data CopyStatus = Available
 data Book = Book
   { isbn              :: ISBN
   , title             :: Title
-  , authors           :: [Author]
-  , publishers        :: [Publisher]
+  , authors           :: Vector Author
+  , publishers        :: Vector Publisher
   , yearOfPublication :: UTCTime
   } deriving (Generic, Show)
 
 instance ToJSON Book where
   toJSON = genericToJSON $ aesonDrop 0 snakeCase
 
+instance FromJSON Book where
+  parseJSON = genericParseJSON $ aesonDrop 0 snakeCase
+
 instance ToSample Book where
   toSamples _ = let now = unsafePerformIO getCurrentTime
-                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" ["Emily Olorin", "Oswyn Brent"] ["Sadness Publishing"] now
+                in singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) now
 
+instance FromRow Book where
+  fromRow = Book <$> field <*> field <*> field <*> field <*> field
+
+instance ToRow Book where
+  toRow b = toRow (isbn b,title b, authors b, publishers b, yearOfPublication b)
 data Copy = Copy
   { copyOf     :: ISBN
   , copyId     :: InternalId
@@ -73,12 +92,10 @@ data AddCopyRequest = AddCopyRequest
   } deriving (Generic, Show)
 
 acrToCopy :: AddCopyRequest -> IO Copy
-acrToCopy req@AddCopyRequest{..} = do
+acrToCopy AddCopyRequest{..} = do
   copyId <- nextRandom
   return $ Copy acrBook (InternalId copyId) acrNotes Available
 
-data AddUserRequest
-data AddUserResponse
 data DeleteUserRequest
 data DeleteUserResponse
 data UpdateUserRequest
@@ -87,9 +104,49 @@ data UpdateUserResponse
 data User = User
   { name   :: Name
   , userId :: InternalId
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON User where
   toJSON = genericToJSON $ aesonDrop 0 snakeCase
 
-instance ToSample User
+instance ToSample User where
+  toSamples _ = do
+    (_, name)       <- toSamples Proxy
+    (_, identifier) <- toSamples Proxy
+    samples $ return (User name identifier)
+
+instance FromRow User where
+  fromRow = User <$> field <*> field
+
+instance ToRow User where
+  toRow (User (Name name) (InternalId iid)) = toRow (name, iid)
+
+data AddUserRequest = AddUserRequest
+  { aureqName :: Name
+  } deriving (Generic, Show, Ord, Eq)
+
+instance ToJSON AddUserRequest where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON AddUserRequest where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+instance ToSample AddUserRequest where
+  toSamples _ = do
+    (_, name) <- toSamples Proxy
+    samples $ return $ AddUserRequest name
+
+data AddUserResponse = AddUserResponse
+  { aurespId :: InternalId
+  } deriving (Generic, Show, Ord, Eq)
+
+instance ToJSON AddUserResponse where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON AddUserResponse where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+instance ToSample AddUserResponse where
+  toSamples _ = do
+    (_, iid) <- toSamples Proxy
+    samples $ return $ AddUserResponse iid
