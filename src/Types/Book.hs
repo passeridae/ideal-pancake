@@ -7,7 +7,6 @@
 module Types.Book where
 
 import           Data.Aeson
-import           Data.Aeson.Casing
 import           Data.String                          hiding (fromString)
 import           Data.Text                            (Text)
 import           Data.Time
@@ -20,6 +19,8 @@ import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Servant
 import           Servant.Docs
+
+import           Types.Common
 
 --------------------------------------------------------------------------------
 
@@ -52,14 +53,14 @@ data Book = Book
   , title             :: Title
   , authors           :: Vector Author
   , publishers        :: Vector Publisher
-  , yearOfPublication :: Day
+  , dateOfPublication :: Day
   } deriving (Generic, Show, Ord, Eq)
 
 instance ToJSON Book where
-  toJSON = genericToJSON $ aesonDrop 0 snakeCase
+  toJSON = genericToJSON defaultAeson
 
 instance FromJSON Book where
-  parseJSON = genericParseJSON $ aesonDrop 0 snakeCase
+  parseJSON = genericParseJSON defaultAeson
 
 instance ToSample Book where
   toSamples _ = singleSample $ Book "lol-legit-isbn" "A Story of Sadness" (V.fromList ["Emily Olorin", "Oswyn Brent"]) (V.fromList ["Sadness Publishing"]) (fromGregorian 2016 09 30)
@@ -68,6 +69,6 @@ instance FromRow Book where
   fromRow = Book <$> field <*> field <*> field <*> field <*> field
 
 instance ToRow Book where
-  toRow b = toRow (isbn b,title b, authors b, publishers b, yearOfPublication b)
+  toRow (Book a b c d e) = toRow (a, b, c, d, e)
 
 --------------------------------------------------------------------------------

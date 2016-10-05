@@ -42,8 +42,8 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = enter (runReaderTNat conf)
-  (serveDocs :<|> index :<|> getAllUsers :<|> addUser
-    :<|> getAllBooks :<|> addBook
+  (serveDocs :<|> index :<|> getAllUsers :<|> getUserById :<|> addUser
+    :<|> getAllBooks :<|> getBookByIsbn :<|> addBook
     :<|> addCopy)
 
 serveDocs :: Pancake Text
@@ -53,6 +53,14 @@ getAllUsers :: Pancake [User]
 getAllUsers = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.getAllUsers serverStore
+
+getUserById :: InternalId -> Pancake User
+getUserById ident = do
+  ServerConfig{..} <- ask
+  maybeUser <- liftIO $ atomically $ P.getUserById serverStore ident
+  case maybeUser of
+    Just user -> return user
+    Nothing   -> throwError err404
 
 addUser :: AddUserRequest -> Pancake AddUserResponse
 addUser AddUserRequest{..} = do
@@ -65,6 +73,14 @@ getAllBooks :: Pancake [Book]
 getAllBooks = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.getAllBooks serverStore
+
+getBookByIsbn :: ISBN -> Pancake Book
+getBookByIsbn isbn = do
+  ServerConfig{..} <- ask
+  maybeBook <- liftIO $ atomically $ P.getBookByIsbn serverStore isbn
+  case maybeBook of
+    Just book -> return book
+    Nothing   -> throwError err404
 
 addBook :: Book -> Pancake NoContent
 addBook book = do
