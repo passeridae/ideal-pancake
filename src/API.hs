@@ -11,7 +11,8 @@ import           Types
 
 type FullAPI = Docs :<|> Index :<|> API
 type API = GetAllUsers :<|> AddUser
-      :<|> GetAllBooks :<|> AddBook --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
+      :<|> GetAllBooks :<|> AddBook
+      :<|> AddCopy --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
 
 -- | Users
 
@@ -23,13 +24,13 @@ type AddUser      = "users"                           :> ReqBody '[JSON] AddUser
 
 -- | Books
 
-type GetAllBooks = "books"                                         :> Get '[JSON] [Book]
-type GetBook     = "books" :> Capture "book_isbn" ISBN             :> Get '[JSON]  Book
-type GetCopies   = "books" :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
+type GetAllBooks = "books"                             :> Get '[JSON] [Book]
+type GetBook     = "books" :> Capture "book_isbn" ISBN :> Get '[JSON]  Book
 type AddBook     = "books" :> ReqBody '[JSON] Book     :> PostNoContent '[JSON] NoContent
 
 -- | Copies
-type AddCopy      = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] UUID
+type GetCopies   = "books" :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
+type AddCopy     = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] AddCopyResponse
 
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text

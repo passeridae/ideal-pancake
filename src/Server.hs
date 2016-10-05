@@ -1,6 +1,8 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
+
 module Server where
 
 import           Control.Concurrent.STM
@@ -9,14 +11,13 @@ import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
-import           Data.Time
 import           Data.UUID.V4
-import qualified Data.Vector               as V
 import           Network.HTTP.Types.Header
 import           Network.Wai
 import           Network.Wai.Handler.Warp
+import           Prelude                   hiding (id)
 import           Servant
-import           Servant.Docs              hiding (API)
+import           Servant.Docs              hiding (API, notes)
 
 import           API
 import           Config
@@ -41,10 +42,12 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = enter (runReaderTNat conf)
-  (serveDocs :<|> index :<|> getAllUsers :<|> addUser :<|> getAllBooks :<|> addBook)
+  (serveDocs :<|> index :<|> getAllUsers :<|> addUser
+    :<|> getAllBooks :<|> addBook
+    :<|> addCopy)
 
 serveDocs :: Pancake Text
-serveDocs = return $ T.pack $ markdown $ docs $ pretty api
+serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
 
 getAllUsers :: Pancake [User]
 getAllUsers = do
@@ -55,7 +58,7 @@ addUser :: AddUserRequest -> Pancake AddUserResponse
 addUser AddUserRequest{..} = do
   ServerConfig{..} <- ask
   uuid <- liftIO $ InternalId <$> nextRandom
-  liftIO $ atomically $ P.addUser serverStore (User aureqName uuid)
+  liftIO $ atomically $ P.addUser serverStore (User name uuid)
   return $ AddUserResponse uuid
 
 getAllBooks :: Pancake [Book]
@@ -68,6 +71,16 @@ addBook book = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.addBook serverStore book
   return NoContent
+
+addCopy :: ISBN -> AddCopyRequest -> Pancake AddCopyResponse
+addCopy isbn acr = do
+  ServerConfig{..} <- ask
+  copy@Copy{..} <- liftIO $ acrToCopy isbn acr
+  successful <- liftIO $ atomically $ P.addCopy serverStore copy
+  return $ if successful then
+    AddCopyResponse (Just id) True
+  else
+    AddCopyResponse Nothing False
 
 index :: Pancake a
 index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
