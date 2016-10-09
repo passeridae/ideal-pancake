@@ -81,23 +81,8 @@ booksHtml books = do
         colMd 2 . string $ show isbn
 
 colMd :: Int -> Html -> Html
-colMd n inner =
-  col' n inner
-  where
-    col' 1 = div ! class_ "col-md-1"
-    col' 2 = div ! class_ "col-md-2"
-    col' 3 = div ! class_ "col-md-3"
-    col' 4 = div ! class_ "col-md-4"
-    col' 5 = div ! class_ "col-md-5"
-    col' 6 = div ! class_ "col-md-6"
-    col' 7 = div ! class_ "col-md-7"
-    col' 8 = div ! class_ "col-md-8"
-    col' 9 = div ! class_ "col-md-9"
-    col' 10 = div ! class_ "col-md-10"
-    col' 11 = div ! class_ "col-md-11"
-    col' 12 = div ! class_ "col-md-12"
-    col' _ = error "Invalid column width"
-  
+colMd n  = div ! (class_ (stringValue ("col-md-" <> show n)))
+
 {-    
 booksHtml :: [T.Book] -> Html
 booksHtml bks = do
