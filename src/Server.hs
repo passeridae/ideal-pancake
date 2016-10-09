@@ -88,7 +88,7 @@ addCopy isbn acr = do
 index :: Pancake Text
 index = return (T.pack (renderHtml indexHtml))
 
-redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
-           in throwError $
-              err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+-- redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
+--            in throwError $
+--               err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
 
