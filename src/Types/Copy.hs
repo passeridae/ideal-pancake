@@ -11,7 +11,10 @@ import           Data.Aeson
 import           Data.Proxy
 import           Data.Text    (Text)
 import           Data.UUID.V4
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
+import           Prelude hiding (id)
 import           Servant.Docs hiding (notes)
 
 import           Types.Book
@@ -28,6 +31,13 @@ data Copy = Copy
   , notes    :: Notes
   , status   :: CopyStatus
   } deriving (Generic, Show)
+
+
+instance FromRow Copy where
+  fromRow = Copy <$> field <*> field <*> (Notes <$> field) <*> (read <$> field)
+
+instance ToRow Copy where
+  toRow Copy{..} = toRow (bookIsbn, id, unNotes $ notes, show $ status)
 
 --------------------------------------------------------------------------------
 

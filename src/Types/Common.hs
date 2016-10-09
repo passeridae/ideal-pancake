@@ -17,6 +17,7 @@ import           Data.Text                            (Text)
 import           Data.UUID
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromField hiding (name)
+import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
 import           Servant
 import           Servant.Docs
@@ -35,7 +36,7 @@ defaultAeson = (aesonDrop 0 snakeCase){omitNothingFields = True}
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (FromField, Generic, Eq, Ord, Show, Read)
+  } deriving (FromField, ToField, Generic, Eq, Ord, Show, Read)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)
