@@ -35,7 +35,7 @@ defaultAeson = (aesonDrop 0 snakeCase){omitNothingFields = True}
 
 newtype InternalId = InternalId
   { unInternalId :: UUID
-  } deriving (FromField, Generic, Eq, Ord, Show)
+  } deriving (FromField, Generic, Eq, Ord, Show, Read)
 
 instance ToJSON InternalId where
   toJSON InternalId{..} = String (toText unInternalId)

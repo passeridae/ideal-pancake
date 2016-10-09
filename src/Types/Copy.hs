@@ -88,7 +88,7 @@ instance ToSample Notes where
 -- CopyStatus
 
 data CopyStatus = Available
-                | OnLoan User
-  deriving (Generic, Show)
+                | OnLoan InternalId
+  deriving (Generic, Show, Read)
 
 --------------------------------------------------------------------------------

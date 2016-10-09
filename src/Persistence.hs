@@ -105,4 +105,4 @@ instance Store Postgres IO where
   addCopy = error "NYI"
 
 initSql :: Query
-initSql = $(embedStringFile "static/db.sql")
+initSql = $(embedStringFile "database/db.sql") 
