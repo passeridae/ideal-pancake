@@ -5,6 +5,8 @@ module API where
 
 import           Data.Text (Text)
 import           Servant
+import           Servant.HTML.Blaze
+import           Text.Blaze.Html5
 
 import           Types
 
@@ -33,5 +35,5 @@ type AddCopy     = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[
 
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
-type Index = Get '[PlainText] Text
 type StaticFiles = "static" :> Raw
+type Index = Get '[HTML] Html
