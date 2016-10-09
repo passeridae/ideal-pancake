@@ -8,7 +8,8 @@ import           Servant
 
 import           Types
 
-type FullAPI = Docs :<|> Index :<|> API
+
+type FullAPI = StaticFiles :<|> (Docs :<|> Index :<|> API)
 type API = GetAllUsers :<|> GetUserById :<|> AddUser
       :<|> GetAllBooks :<|> GetBook :<|> AddBook
       :<|> AddCopy --GetUser :<|> GetAllBooks :<|> GetBook :<|> GetCopies :<|> RegisterBook :<|> AddCopy
@@ -34,3 +35,4 @@ type AddCopy     = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
 type Index = Get '[PlainText] Text
+type StaticFiles = "static" :> Raw

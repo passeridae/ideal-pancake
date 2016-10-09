@@ -41,13 +41,17 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = enter (runReaderTNat conf)
+server conf = staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|> index :<|> getAllUsers :<|> getUserById :<|> addUser
     :<|> getAllBooks :<|> getBookByIsbn :<|> addBook
     :<|> addCopy)
 
 serveDocs :: Pancake Text
 serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
+
+staticFiles :: Server Raw
+staticFiles = serveDirectory "static"
+
 
 getAllUsers :: Pancake [User]
 getAllUsers = do
