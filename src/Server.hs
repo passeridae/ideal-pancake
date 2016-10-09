@@ -57,7 +57,7 @@ getAllUsers = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.getAllUsers serverStore
 
-getUserById :: InternalId -> Pancake User
+getUserById :: InternalId User -> Pancake User
 getUserById ident = do
   ServerConfig{..} <- ask
   maybeUser <- liftIO $ atomically $ P.getUserById serverStore ident

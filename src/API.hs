@@ -15,11 +15,11 @@ type API = GetAllUsers :<|> GetUserById :<|> AddUser
 
 -- | Users
 
-type GetAllUsers   = "users"                                                                      :> Get  '[JSON] [User]
-type GetUserById   = "users" :> Capture "user_id" InternalId                                      :> Get  '[JSON] User
-type DeleteUser    = "users" :> Capture "user_id" InternalId :> ReqBody '[JSON] DeleteUserRequest :> Get  '[JSON] DeleteUserResponse
-type UpdateUser    = "users" :> Capture "user_id" InternalId :> ReqBody '[JSON] UpdateUserRequest :> Get  '[JSON] UpdateUserResponse
-type AddUser       = "users"                                 :> ReqBody '[JSON] AddUserRequest    :> Post '[JSON] AddUserResponse
+type GetAllUsers   = "users"                                                                             :> Get  '[JSON] [User]
+type GetUserById   = "users" :> Capture "user_id" (InternalId User)                                      :> Get  '[JSON] User
+type DeleteUser    = "users" :> Capture "user_id" (InternalId User) :> ReqBody '[JSON] DeleteUserRequest :> Get  '[JSON] DeleteUserResponse
+type UpdateUser    = "users" :> Capture "user_id" (InternalId User) :> ReqBody '[JSON] UpdateUserRequest :> Get  '[JSON] UpdateUserResponse
+type AddUser       = "users"                                        :> ReqBody '[JSON] AddUserRequest    :> Post '[JSON] AddUserResponse
 
 -- | Books
 

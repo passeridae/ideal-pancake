@@ -33,20 +33,20 @@ defaultAeson = (aesonDrop 0 snakeCase){omitNothingFields = True}
 
 -- Internal Identifiers (UUID v4)
 
-newtype InternalId = InternalId
+newtype InternalId a = InternalId
   { unInternalId :: UUID
   } deriving (FromField, Generic, Eq, Ord, Show, Read)
 
-instance ToJSON InternalId where
+instance ToJSON (InternalId a) where
   toJSON InternalId{..} = String (toText unInternalId)
 
-instance FromJSON InternalId where
+instance FromJSON (InternalId a) where
   parseJSON = withText "InternalId" $ \x ->
     case fromText x of
       Nothing -> fail "Invalid UUID"
       Just u  -> return $ InternalId u
 
-instance FromHttpApiData InternalId where
+instance FromHttpApiData (InternalId a) where
   parseUrlPiece piece = do
     text <- parseUrlPiece piece
     case fromText text of
@@ -58,12 +58,12 @@ instance FromHttpApiData InternalId where
       Nothing -> fail "Invalid UUID"
       Just u  -> return $ InternalId u
 
-instance ToSample InternalId where
+instance ToSample (InternalId a) where
   toSamples _ = do
     let ids = unsafePerformIO $ replicateM 10 nextRandom--singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
     samples (map InternalId ids)
 
-instance ToCapture (Capture "user_id" InternalId) where
+instance ToCapture (Capture "user_id" (InternalId a)) where
   toCapture _ = DocCapture "user_id" "unique identifier for the user"
 
 

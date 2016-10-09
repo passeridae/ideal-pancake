@@ -24,7 +24,7 @@ import           Types.User
 
 data Copy = Copy
   { bookIsbn :: ISBN
-  , id       :: InternalId
+  , id       :: InternalId Copy
   , notes    :: Notes
   , status   :: CopyStatus
   } deriving (Generic, Show)
@@ -54,7 +54,7 @@ acrToCopy isbn AddCopyRequest{..} = do
   return $ Copy isbn copyId notes Available
 
 data AddCopyResponse = AddCopyResponse
-  { id         :: Maybe InternalId
+  { id         :: Maybe (InternalId Copy)
   , successful :: Bool
   } deriving (Generic, Show, Eq, Ord)
 
@@ -88,7 +88,7 @@ instance ToSample Notes where
 -- CopyStatus
 
 data CopyStatus = Available
-                | OnLoan InternalId
+                | OnLoan (InternalId User)
   deriving (Generic, Show, Read)
 
 --------------------------------------------------------------------------------
