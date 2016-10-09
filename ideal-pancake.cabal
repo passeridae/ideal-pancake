@@ -55,6 +55,15 @@ executable ideal-pancake
                      , ideal-pancake
   default-language:    Haskell2010
 
+executable ideal-pancake-js-client
+  hs-source-dirs:      app
+  main-is:             JSClient.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , ideal-pancake
+                     , servant-js
+  default-language:    Haskell2010
+
 test-suite ideal-pancake-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
