@@ -24,8 +24,11 @@ import           API
 import           Config
 import qualified Persistence               as P
 import           Types
-import Html
-import Text.Blaze.Renderer.String
+import           Html
+import           Text.Blaze.Html5
+import qualified Data.Vector as V
+import           Data.Time.Calendar
+
 
 type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
@@ -85,8 +88,15 @@ addCopy isbn acr = do
   else
     AddCopyResponse Nothing False
 
-index :: Pancake Text
-index = return (T.pack (renderHtml indexHtml))
+index :: Pancake Html
+index =
+  do books <- getAllBooks
+     return . booksHtml $ [test]
+       where test = Book
+               "lol-legit-isbn"
+               "A Story of Sadness"
+               (V.fromList ["Emily Olorin", "Oswyn Brent"])
+               (V.fromList ["Sadness Publishing"]) (fromGregorian 2016 09 30)
 
 -- redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
 --            in throwError $
