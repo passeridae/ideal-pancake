@@ -6,6 +6,7 @@ module API where
 import           Data.Text (Text)
 import           Data.UUID
 import           Servant
+import           Servant.HTML.Blaze
 
 import           Types
 
@@ -34,4 +35,4 @@ type AddCopy     = "books" :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[
 
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
-type Index = Get '[PlainText] Text
+type Index = Get '[HTML] Text

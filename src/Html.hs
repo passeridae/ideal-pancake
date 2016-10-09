@@ -1,20 +1,55 @@
 
-module Html where
-
 {-# LANGUAGE OverloadedStrings #-}
+
+module Html (indexHtml, booksHtml) where
+
+
 
 import Prelude hiding (head, id, div)
 
-import           Data.Monoid
+import qualified Types as T
+import           Control.Monad (forM_)
 import           Data.Text                       hiding (head)
-import qualified Data.ByteString.Lazy.Char8      as L
-import           Data.Time
+import           Data.Time.Calendar
 import           Text.Blaze.Html5                hiding (map, main)
 import           Text.Blaze.Html5.Attributes     hiding (title, form, label)
-import           Text.Blaze.Html.Renderer.Pretty        (renderHtml)
+--import           Text.Blaze.Html.Renderer.Pretty        (renderHtml)
 
 
-booksHtml :: [Book] -> Html
+headerHtml :: Html
+headerHtml = do
+  head $ do
+    meta ! charset "utf-8"
+    meta ! name "viewport" ! content "width=device-width, initial-scale=1"
+    title $ text "Ideal Pancake"
+    link
+      ! rel  "stylesheet"
+      ! href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+
+  
+
+indexHtml :: Html
+indexHtml = do
+  headerHtml
+  body $ do
+    container $ do
+      row $ text "Welcome to ideal-pancake"
+      row $ do
+        form $ do
+          formGroup $ do
+            label ! for "email" $ text "Email address:"
+            input ! type_ "email" ! name "email"
+          formGroup $ do
+            label ! for "password" $ text "Password:"
+            input ! type_ "password" ! name "password"
+          formGroup $ do
+            label $ do
+              input ! type_ "checkbox"
+              text "Remember me"
+          button ! type_ "submit" ! class_ "btn btn-default" $ text "Login"
+    booksHtml []
+    
+booksHtml :: [T.Book] -> Html
 booksHtml bks = do
   table ! class_ "table-responsive" $ do
     thead $ do 
@@ -27,13 +62,13 @@ booksHtml bks = do
     tbody $ do
       bks `forM_` book
   where
-    book (Book isbn title authors publishers year) = do
+    book (T.Book isbn bookTitle authors publishers year) = do
       tr $ do
-        td . text   $ title
+        td . text   $ bookTitle
         td . rowsOf $ authors
         td . rowsOf $ publishers
-        td . showYear year
-        td . text   $ isbn
+        td . text   $ showYear year
+        td . string $ show isbn
           
 rowsOf as = do
   container $ do
@@ -50,6 +85,7 @@ formGroup = div ! class_ "form-group"
 
 crossorigin = customAttribute "crossorigin"
 
+showYear :: Day -> Text
 showYear d =
-  let (yr, _, _) = toGregorian . utctDay d
+  let (yr, _, _) = toGregorian d
   in  pack $ show yr

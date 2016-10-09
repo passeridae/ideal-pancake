@@ -18,11 +18,14 @@ import           Network.Wai.Handler.Warp
 import           Prelude                   hiding (id)
 import           Servant
 import           Servant.Docs              hiding (API, notes)
+import           Servant.HTML.Blaze
 
 import           API
 import           Config
 import qualified Persistence               as P
 import           Types
+import Html
+import Text.Blaze.Renderer.String
 
 type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
@@ -82,6 +85,10 @@ addCopy isbn acr = do
   else
     AddCopyResponse Nothing False
 
-index :: Pancake a
-index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
-        in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+index :: Pancake Text
+index = return (T.pack (renderHtml indexHtml))
+
+redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
+           in throwError $
+              err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+
