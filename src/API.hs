@@ -8,7 +8,6 @@ import           Servant
 
 import           Types
 
-
 type FullAPI = StaticFiles :<|> (Docs :<|> Index :<|> API)
 type API = GetAllUsers :<|> GetUserById :<|> AddUser
       :<|> GetAllBooks :<|> GetBook :<|> AddBook
