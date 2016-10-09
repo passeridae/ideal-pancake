@@ -23,6 +23,7 @@ library
                        Types.Book
                        Types.Common
                        Types.Copy
+                       Types.Rental
                        Types.User
   build-depends:       base >= 4.7 && < 5
                      , aeson
