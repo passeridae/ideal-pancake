@@ -19,6 +19,7 @@ library
                        Config
                        Persistence
                        Server
+                       Html
                        Types
                        Types.Book
                        Types.Common
@@ -44,6 +45,9 @@ library
                      , vector
                      , wai
                      , warp
+                     , blaze-html
+                     , blaze-markup
+                     , servant-blaze
   ghc-options:         -Wall
   default-language:    Haskell2010
 
