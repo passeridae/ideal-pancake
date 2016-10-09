@@ -52,7 +52,6 @@ serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOption
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
-
 getAllUsers :: Pancake [User]
 getAllUsers = do
   ServerConfig{..} <- ask
