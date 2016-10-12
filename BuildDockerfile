@@ -1,0 +1,8 @@
+FROM ideal-pancake-base
+MAINTAINER obrent <oztastic703@gmail.com>
+
+# Copy our context into the build directory and start working from there
+ADD .   /build
+WORKDIR /build
+
+RUN stack build
