@@ -29,15 +29,14 @@ data Copy = Copy
   { bookIsbn :: ISBN
   , id       :: InternalId
   , notes    :: Notes
-  , status   :: CopyStatus
   } deriving (Generic, Show)
 
 
 instance FromRow Copy where
-  fromRow = Copy <$> field <*> field <*> (Notes <$> field) <*> (read <$> field)
+  fromRow = Copy <$> field <*> field <*> (Notes <$> field) 
 
 instance ToRow Copy where
-  toRow Copy{..} = toRow (bookIsbn, id, unNotes $ notes, show $ status)
+  toRow Copy{..} = toRow (bookIsbn, id, unNotes $ notes)
 
 --------------------------------------------------------------------------------
 
@@ -61,7 +60,7 @@ instance ToSample AddCopyRequest where
 acrToCopy :: ISBN -> AddCopyRequest -> IO Copy
 acrToCopy isbn AddCopyRequest{..} = do
   copyId <- InternalId <$> nextRandom
-  return $ Copy isbn copyId notes Available
+  return $ Copy isbn copyId notes 
 
 data AddCopyResponse = AddCopyResponse
   { id         :: Maybe InternalId
@@ -95,10 +94,3 @@ instance ToSample Notes where
 
 --------------------------------------------------------------------------------
 
--- CopyStatus
-
-data CopyStatus = Available
-                | OnLoan InternalId
-  deriving (Generic, Show, Read)
-
---------------------------------------------------------------------------------
