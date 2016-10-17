@@ -102,7 +102,9 @@ instance Store Postgres IO where
     safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM books"
-  addCopy = error "NYI"
+  addCopy (PGConn pool) copy = withResource pool $ \conn -> do
+    _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
+    return True
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")

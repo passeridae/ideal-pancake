@@ -11,7 +11,10 @@ import           Data.Aeson
 import           Data.Proxy
 import           Data.Text    (Text)
 import           Data.UUID.V4
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
+import           Prelude hiding (id)
 import           Servant.Docs hiding (notes)
 
 import           Types.Book
@@ -23,11 +26,17 @@ import           Types.User
 -- Copy
 
 data Copy = Copy
-  { bookIsbn :: ISBN
-  , id       :: InternalId Copy
+  { id       :: InternalId Copy
+  , bookIsbn :: ISBN
   , notes    :: Notes
-  , status   :: CopyStatus
   } deriving (Generic, Show)
+
+
+instance FromRow Copy where
+  fromRow = Copy <$> field <*> field <*> (Notes <$> field) 
+
+instance ToRow Copy where
+  toRow Copy{..} = toRow (id, bookIsbn, unNotes $ notes)
 
 --------------------------------------------------------------------------------
 
@@ -51,7 +60,7 @@ instance ToSample AddCopyRequest where
 acrToCopy :: ISBN -> AddCopyRequest -> IO Copy
 acrToCopy isbn AddCopyRequest{..} = do
   copyId <- InternalId <$> nextRandom
-  return $ Copy isbn copyId notes Available
+  return $ Copy copyId isbn notes 
 
 data AddCopyResponse = AddCopyResponse
   { id         :: Maybe (InternalId Copy)
@@ -85,10 +94,3 @@ instance ToSample Notes where
 
 --------------------------------------------------------------------------------
 
--- CopyStatus
-
-data CopyStatus = Available
-                | OnLoan (InternalId User)
-  deriving (Generic, Show, Read)
-
---------------------------------------------------------------------------------
