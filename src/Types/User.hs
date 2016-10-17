@@ -21,7 +21,7 @@ import           Types.Common                       as X
 
 data User = User
   { name :: Name
-  , id   :: InternalId
+  , id   :: InternalId User
   } deriving (Generic, Eq, Ord, Show)
 
 instance ToJSON User where
@@ -59,7 +59,7 @@ instance ToSample AddUserRequest where
     samples $ return $ AddUserRequest name
 
 data AddUserResponse = AddUserResponse
-  { id :: InternalId
+  { id :: InternalId User
   } deriving (Generic, Show, Ord, Eq)
 
 instance ToJSON AddUserResponse where

@@ -20,9 +20,9 @@ import           Types.User
 -- Rental
 
 data Rental = Rental
-  { id         :: InternalId 
-  , copyId     :: InternalId 
-  , userId     :: InternalId
+  { id         :: InternalId Rental
+  , copyId     :: InternalId Copy
+  , userId     :: InternalId User
   , returnDate :: Day
   } deriving (Generic, Show)
 

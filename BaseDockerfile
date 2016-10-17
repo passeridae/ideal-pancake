@@ -1,0 +1,12 @@
+FROM fpco/stack-build:lts-7.0
+MAINTAINER obrent <obrent@atlassian.com>
+
+# Copy our context into the build directory and start working from there
+ADD ideal-pancake.cabal   /build/ideal-pancake.cabal
+ADD stack.yaml /build/stack.yaml
+WORKDIR /build
+
+# Initiate the build environment and build the executable.
+RUN stack setup
+RUN stack update
+RUN stack build --only-dependencies

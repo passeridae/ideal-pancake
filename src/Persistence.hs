@@ -28,7 +28,7 @@ class Monad m => Store t m where
   destroyConnection   :: Conn t -> m ()
   initStore           :: Conn t -> m ()
   addUser             :: Conn t -> User -> m ()
-  getUserById         :: Conn t -> InternalId -> m (Maybe User)
+  getUserById         :: Conn t -> InternalId User -> m (Maybe User)
   getUserByName       :: Conn t -> Name -> m (Maybe User)
   getAllUsers         :: Conn t -> m [User]
   addBook             :: Conn t -> Book -> m ()
@@ -42,7 +42,7 @@ data InMemory
 data X
 
 data InMemoryStore = InMemoryStore
-  { users  :: TVar (Map InternalId User)
+  { users  :: TVar (Map (InternalId User) User)
   , books  :: TVar (Map ISBN Book)
   , copies :: TVar (Map ISBN [Copy])
   }
@@ -107,4 +107,4 @@ instance Store Postgres IO where
     return True
 
 initSql :: Query
-initSql = $(embedStringFile "database/db.sql") 
+initSql = $(embedStringFile "database/db.sql")

@@ -27,7 +27,7 @@ import           Types.User
 
 data Copy = Copy
   { bookIsbn :: ISBN
-  , id       :: InternalId
+  , id       :: InternalId Copy
   , notes    :: Notes
   } deriving (Generic, Show)
 
@@ -63,7 +63,7 @@ acrToCopy isbn AddCopyRequest{..} = do
   return $ Copy isbn copyId notes 
 
 data AddCopyResponse = AddCopyResponse
-  { id         :: Maybe InternalId
+  { id         :: Maybe (InternalId Copy)
   , successful :: Bool
   } deriving (Generic, Show, Eq, Ord)
 

@@ -18,11 +18,17 @@ import           Network.Wai.Handler.Warp
 import           Prelude                   hiding (id)
 import           Servant
 import           Servant.Docs              hiding (API, notes)
+import           Servant.HTML.Blaze
 
 import           API
 import           Config
 import qualified Persistence               as P
 import           Types
+import           Html
+import           Text.Blaze.Html5
+import qualified Data.Vector as V
+import           Data.Time.Calendar
+
 
 type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
@@ -57,7 +63,7 @@ getAllUsers = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.getAllUsers serverStore
 
-getUserById :: InternalId -> Pancake User
+getUserById :: InternalId User -> Pancake User
 getUserById ident = do
   ServerConfig{..} <- ask
   maybeUser <- liftIO $ atomically $ P.getUserById serverStore ident
@@ -101,6 +107,17 @@ addCopy isbn acr = do
   else
     AddCopyResponse Nothing False
 
-index :: Pancake a
-index = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
-        in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+index :: Pancake Html
+index =
+  do books <- getAllBooks
+     return . booksHtml $ [test]
+       where test = Book
+               "lol-legit-isbn"
+               "A Story of Sadness"
+               (V.fromList ["Emily Olorin", "Oswyn Brent"])
+               (V.fromList ["Sadness Publishing"]) (fromGregorian 2016 09 30)
+
+-- redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
+--            in throwError $
+--               err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+
