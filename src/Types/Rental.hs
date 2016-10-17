@@ -8,6 +8,8 @@
 module Types.Rental where
 
 import           Data.Time
+import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Prelude hiding (id)
 
@@ -25,5 +27,11 @@ data Rental = Rental
   , userId     :: InternalId User
   , returnDate :: Day
   } deriving (Generic, Show)
+
+instance FromRow Rental where
+  fromRow = Rental <$> field <*> field <*> field <*> field
+
+instance ToRow Rental where
+  toRow Rental{..} = toRow (id, copyId, userId, returnDate) 
 
 --------------------------------------------------------------------------------
