@@ -1,4 +1,4 @@
 #!/bin/sh
 
-stack exec ideal-pancake-js-client
-stack exec ideal-pancake
+./bin/ideal-pancake-js-client
+./bin/ideal-pancake

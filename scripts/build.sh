@@ -1,7 +1,7 @@
 #! /bin/bash -e
 
 export GIT_REV=$(git describe --always)
-TAG=ideal-pancake
+TAG=oswynb/ideal-pancake
 docker build --rm=true --tag=$TAG-build:${GIT_REV} -f BuildDockerfile .
 cd run
 mkdir -p export
