@@ -35,6 +35,11 @@ class Monad m => Store t m where
   getBookByIsbn       :: Conn t -> ISBN -> m (Maybe Book)
   getAllBooks         :: Conn t -> m [Book]
   addCopy             :: Conn t -> Copy -> m Bool
+  getCopiesByBook     :: Conn t -> ISBN -> m [Copy]
+  addRental           :: Conn t -> Rental -> m ()
+  getRental           :: Conn t -> InternalId Rental -> m (Maybe Rental)
+  getRentalsByUser    :: Conn t -> InternalId User -> m [Rental]
+  getRentalsByCopy    :: Conn t -> InternalId Copy -> m [Rental]
 
 -- | Example InMemory implementation
 data InMemory
@@ -70,6 +75,11 @@ instance Store InMemory STM where
       Just _  -> do
         modifyTVar copies $ M.insertWith (<>) bookIsbn [copy]
         pure True
+  getCopiesByBook  = undefined
+  addRental        = undefined
+  getRental        = undefined
+  getRentalsByCopy = undefined
+  getRentalsByUser = undefined
 
 data Postgres
 
@@ -102,9 +112,19 @@ instance Store Postgres IO where
     safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM books"
-  addCopy (PGConn pool) copy = withResource pool $ \conn -> do
+  addCopy           (PGConn pool) copy = withResource pool $ \conn -> do
     _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
     return True
+  getCopiesByBook   (PGConn pool) isbn = withResource pool $ \conn -> do
+    query conn "SELECT * FROM copies WHERE copyOf = ? " (Only isbn) 
+  addRental (PGConn pool) rental = withResource pool $ \conn -> void $
+    execute conn "INSERT into rentals (rentalId, copyId, userId, returnDate) VALUES (?,?,?,?)" rental
+  getRental (PGConn pool) rentalId = withResource pool $ \conn -> do
+    safeHead <$> query conn "SELECT * FROM rentals WHERE copyId = ?" (Only rentalId)
+  getRentalsByUser (PGConn pool) userId = withResource pool $ \conn -> do
+    query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
+  getRentalsByCopy (PGConn pool) copyId = withResource pool $ \conn -> do
+    query conn "SELECT * FROM rentals where copyId = ?" (Only copyId)
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")
