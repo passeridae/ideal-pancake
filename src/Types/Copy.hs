@@ -26,8 +26,8 @@ import           Types.User
 -- Copy
 
 data Copy = Copy
-  { bookIsbn :: ISBN
-  , id       :: InternalId Copy
+  { id       :: InternalId Copy
+  , bookIsbn :: ISBN
   , notes    :: Notes
   } deriving (Generic, Show)
 
@@ -36,7 +36,7 @@ instance FromRow Copy where
   fromRow = Copy <$> field <*> field <*> (Notes <$> field) 
 
 instance ToRow Copy where
-  toRow Copy{..} = toRow (bookIsbn, id, unNotes $ notes)
+  toRow Copy{..} = toRow (id, bookIsbn, unNotes $ notes)
 
 --------------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ instance ToSample AddCopyRequest where
 acrToCopy :: ISBN -> AddCopyRequest -> IO Copy
 acrToCopy isbn AddCopyRequest{..} = do
   copyId <- InternalId <$> nextRandom
-  return $ Copy isbn copyId notes 
+  return $ Copy copyId isbn notes 
 
 data AddCopyResponse = AddCopyResponse
   { id         :: Maybe (InternalId Copy)

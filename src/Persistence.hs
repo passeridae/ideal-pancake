@@ -103,7 +103,7 @@ instance Store Postgres IO where
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM books"
   addCopy (PGConn pool) copy = withResource pool $ \conn -> do
-    _ <- execute conn "INSERT into copy (copyOf, copyId, copyNotes, copyStatus) VALUES (?,?,?,?)" copy
+    _ <- execute conn "INSERT into copy (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
     return True
 
 initSql :: Query
