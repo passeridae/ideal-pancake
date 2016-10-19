@@ -110,12 +110,7 @@ addCopy isbn acr = do
 index :: Pancake Html
 index =
   do books <- getAllBooks
-     return . booksHtml $ [test]
-       where test = Book
-               "lol-legit-isbn"
-               "A Story of Sadness"
-               (V.fromList ["Emily Olorin", "Oswyn Brent"])
-               (V.fromList ["Sadness Publishing"]) (fromGregorian 2016 09 30)
+     return . booksHtml $ books
 
 -- redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
 --            in throwError $
