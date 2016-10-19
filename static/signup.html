@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -12,20 +12,11 @@
     </style>
 
     <script src="./client.js"></script>
-    <script>
-      function addBook () {
-        var body  = {};
-        body["authors"] = [$("#author_id").val()];
-        body["publishers"] = [$("#pub_id").val()];
-        body["isbn"] = $("#isbn_id").val();
-        body["date_of_publication"] = $("#date_id").val();
-        body["title"] = $("#title_id").val();
-        postBooks (body,function () { alert ("Success"); }, function () {alert("Failure") });
-      }
-    </script>
+
   </head>
 
   <body>
+
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
             <div class="navbar-header">
@@ -45,35 +36,32 @@
             </div><!--/.nav-collapse -->
       </div>
     </div>
-
-
+    
     <div class="container">
+    
       <div class="text-center">
-        <h1>Add a Book</h1>
-          <div class="form-group"> <!-- Title field !-->
-            <label for="title_id" class="control-label">Title</label>
-            <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
+        <h1>Signup</h1>
+    
+      <form>
+          <div class="form-group"> <!-- Email field !-->
+            <label for="email_id" class="control-label">Email</label>
+            <textarea class="form-control" id="email_id" name="emailname" rows="1"></textarea>
           </div>
-          <div class="form-group"> <!-- Author field !-->
-            <label for="author_id" class="control-label">Author(s)</label>
-            <textarea class="form-control" id="author_id" name="author_name" rows="1"></textarea>
+          <div class="form-group"> <!-- Password field !-->
+            <label for="pass_id" class="control-label">Password</label>
+            <textarea class="form-control" id="pass_id" name="pass_name" rows="1"></textarea>
           </div>
-          <div class="form-group"> <!-- Publisher field !-->
-            <label for="publisher_id" class="control-label">Publisher</label>
-            <textarea class="form-control" id="pub_id" name="pub_name" rows="1"></textarea>
-          </div>
-          <div class="form-group"> <!-- ISBN field !-->
-            <label for="isbn_id" class="control-label">ISBN</label>
-            <textarea class="form-control" id="isbn_id" name="isbn_name" rows="1"></textarea>
-          </div>
-          <div class="form-group"> <!-- Year of Publication field !-->
-            <label for="pub_id" class="control-label">Date of Publication</label>
-            <textarea class="form-control" id="date_id" name="date_name" rows="1"></textarea>
+          <div class="form-group"> <!-- Repeat Password field !-->
+            <label for="pass2_id" class="control-label">Repeat Password</label>
+            <textarea class="form-control" id="pass2_id" name="pass2_name" rows="1"></textarea>
           </div>
           <div class="form-group"> <!-- Submit button !-->
-            <button onclick="addBook();" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
           </div>
+    
+        </form>
       </div>
+    
     </div><!-- /.container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -82,3 +70,4 @@
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
   </body>
 </html>
+
