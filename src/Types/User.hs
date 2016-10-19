@@ -1,10 +1,10 @@
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE DataKinds                  #-}
 
 module Types.User where
 
@@ -17,8 +17,8 @@ import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Prelude                            hiding (id)
 import qualified Prelude                            (id)
+import           Servant                            hiding (NoSuchUser)
 import           Servant.Docs                       hiding (notes)
-import           Servant hiding (NoSuchUser)
 
 
 import           Types.Common                       as X

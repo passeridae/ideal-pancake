@@ -5,20 +5,21 @@ module Html (indexHtml, booksHtml) where
 
 
 
-import Prelude hiding (head, id, div)
+import           Prelude                     hiding (div, head, id)
 
-import qualified Types as T
-import           Control.Monad (forM_)
-import           Data.Text                       hiding (head)
-import           Data.Time.Calendar
+import           Control.Monad               (forM_)
 import           Data.Monoid
-import           Text.Blaze.Html5                hiding (map, main)
-import           Text.Blaze.Html5.Attributes     hiding (title, form, label)
+import           Data.Text                   hiding (head)
+import           Data.Time.Calendar
+import           Text.Blaze.Html5            hiding (main, map)
+import           Text.Blaze.Html5.Attributes hiding (form, label, title)
+import qualified Types                       as T
 
 --import           Text.Blaze.Html.Renderer.Pretty        (renderHtml)
 
-appName = "ideal-pancake"
+--appName = "ideal-pancake"
 
+bootstrapUrl :: AttributeValue
 bootstrapUrl = "https://" <> domain <> "/bootstrap/"
                           <> version <> "/css/" <> file
   where domain = "maxcdn.bootstrapcdn.com"
@@ -32,7 +33,7 @@ bootstrap = link
   ! crossorigin "anonymous"
 
 headerHtml :: Html
-headerHtml = do
+headerHtml =
   head $ do
     meta ! charset "utf-8"
     meta ! name "viewport" ! content "width=device-width, initial-scale=1"
@@ -45,7 +46,7 @@ indexHtml = do
   body $ do
     container $ do
       row $ text "Welcome to ideal-pancake"
-      row $ do
+      row $
         form $ do
           formGroup $ do
             label ! for "email" $ text "Email address:"
@@ -53,7 +54,7 @@ indexHtml = do
           formGroup $ do
             label ! for "password" $ text "Password:"
             input ! type_ "password" ! name "password"
-          formGroup $ do
+          formGroup $
             label $ do
               input ! type_ "checkbox"
               text "Remember me"
@@ -81,13 +82,13 @@ booksHtml books = do
         colMd 2 . string $ show isbn
 
 colMd :: Int -> Html -> Html
-colMd n  = div ! (class_ (stringValue ("col-md-" <> show n)))
+colMd n = div ! class_ (stringValue ("col-md-" <> show n))
 
-{-    
+{-
 booksHtml :: [T.Book] -> Html
 booksHtml bks = do
   table ! class_ "table-responsive" $ do
-    thead $ do 
+    thead $ do
       tr $ do
         th $ text "Title"
         th $ text "Authors"
@@ -106,15 +107,14 @@ booksHtml bks = do
         td . string $ show isbn
 -}
 
-rowsHtml :: (Foldable t) => t Html -> Html
-rowsHtml as = do
-  as `forM_` row
+-- rowsHtml :: (Foldable t) => t Html -> Html
+-- rowsHtml as = as `forM_` row
 
-rowsOf :: (Foldable t) => t Text -> Html 
-rowsOf as = do
-  container $ do
+rowsOf :: (Foldable t) => t Text -> Html
+rowsOf as =
+  container $
     as `forM_` (row . text)
-          
+
 container :: Html -> Html
 container = div ! class_ "container"
 
@@ -124,6 +124,7 @@ row = div ! class_ "row"
 formGroup :: Html -> Html
 formGroup = div ! class_ "form-group"
 
+crossorigin :: AttributeValue -> Attribute
 crossorigin = customAttribute "crossorigin"
 
 showYear :: Day -> Text

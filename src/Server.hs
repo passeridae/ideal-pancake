@@ -11,7 +11,6 @@ import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
-import qualified Data.Text                 as T
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
 import           Network.Wai
@@ -19,12 +18,9 @@ import           Network.Wai.Handler.Warp
 import           Prelude                   hiding (id)
 import           Servant
 import           Servant.Docs              hiding (API, notes)
-import           Servant.HTML.Blaze
 
 import           API
 import           Config
-import           Data.Time.Calendar
-import qualified Data.Vector               as V
 import           Html
 import qualified Persistence               as P
 import           Text.Blaze.Html5
