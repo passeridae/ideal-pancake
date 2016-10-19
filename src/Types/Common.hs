@@ -64,10 +64,6 @@ instance ToSample (InternalId a) where
     let ids = unsafePerformIO $ replicateM 10 nextRandom--singleSample (InternalId (fromJust $ fromString "0fac788a-51bb-453e-a14a-61d70df8781d"))
     samples (map InternalId ids)
 
-instance ToCapture (Capture "user_id" (InternalId a)) where
-  toCapture _ = DocCapture "user_id" "unique identifier for the user"
-
-
 --------------------------------------------------------------------------------
 
 -- Name
@@ -77,5 +73,12 @@ newtype Name = Name Text
 
 instance ToSample Name where
   toSamples _ = samples $ map Name ["Oswyn Brent", "Emily Olorin", "Tristram Healy", "Andrew Semler"]
+
+instance FromHttpApiData Name where
+  parseUrlPiece piece = Name <$> parseUrlPiece piece
+  parseQueryParam param = Name <$> parseQueryParam param
+
+instance ToParam (QueryParam "name" Name) where
+  toParam _ = DocQueryParam "name" [] "name or name fragment to search for" Normal
 
 --------------------------------------------------------------------------------

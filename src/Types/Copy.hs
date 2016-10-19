@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE RecordWildCards            #-}
@@ -9,17 +10,17 @@ module Types.Copy where
 
 import           Data.Aeson
 import           Data.Proxy
-import           Data.Text    (Text)
+import           Data.Text                          (Text)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
-import           Prelude hiding (id)
-import           Servant.Docs hiding (notes)
+import           Prelude                            hiding (id)
+import           Servant
+import           Servant.Docs                       hiding (notes)
 
 import           Types.Book
 import           Types.Common
-import           Types.User
 
 --------------------------------------------------------------------------------
 
@@ -31,12 +32,25 @@ data Copy = Copy
   , notes    :: Notes
   } deriving (Generic, Show)
 
-
 instance FromRow Copy where
-  fromRow = Copy <$> field <*> field <*> (Notes <$> field) 
+  fromRow = Copy <$> field <*> field <*> (Notes <$> field)
 
 instance ToRow Copy where
-  toRow Copy{..} = toRow (id, bookIsbn, unNotes $ notes)
+  toRow Copy{..} = toRow (id, bookIsbn, unNotes notes)
+
+instance ToJSON Copy where
+  toJSON = genericToJSON defaultAeson
+
+instance FromJSON Copy where
+  parseJSON = genericParseJSON defaultAeson
+
+instance ToSample Copy where
+  toSamples _ = do
+    (id, bookIsbn, notes) <- snd <$> toSamples Proxy
+    samples $ return Copy{..}
+
+instance ToCapture (Capture "copy_id" (InternalId Copy)) where
+  toCapture _ = DocCapture "copy_id" "unique identifier for the book copy"
 
 --------------------------------------------------------------------------------
 
@@ -60,7 +74,7 @@ instance ToSample AddCopyRequest where
 acrToCopy :: ISBN -> AddCopyRequest -> IO Copy
 acrToCopy isbn AddCopyRequest{..} = do
   copyId <- InternalId <$> nextRandom
-  return $ Copy copyId isbn notes 
+  return $ Copy copyId isbn notes
 
 data AddCopyResponse = AddCopyResponse
   { id         :: Maybe (InternalId Copy)
@@ -83,6 +97,13 @@ instance ToSample AddCopyResponse where
 
 --------------------------------------------------------------------------------
 
+-- UpdateCopy
+
+-- Same data as add (only notes)
+type UpdateCopyRequest = AddCopyRequest
+
+--------------------------------------------------------------------------------
+
 -- Notes
 
 newtype Notes = Notes
@@ -93,4 +114,3 @@ instance ToSample Notes where
   toSamples _ = samples $ map Notes [Just "Damaged back cover", Just "Coffee stains throughout", Nothing]
 
 --------------------------------------------------------------------------------
-

@@ -13,6 +13,8 @@ import           Data.Map                   (Map)
 import qualified Data.Map.Strict            as M
 import           Data.Monoid
 import           Data.Pool
+import           Data.Text                  (Text)
+import qualified Data.Text                  as T
 import           Database.PostgreSQL.Simple
 import           Prelude                    hiding (id)
 
@@ -29,7 +31,7 @@ class Monad m => Store t m where
   initStore           :: Conn t -> m ()
   addUser             :: Conn t -> User -> m ()
   getUserById         :: Conn t -> InternalId User -> m (Maybe User)
-  getUserByName       :: Conn t -> Name -> m (Maybe User)
+  getUsersByName      :: Conn t -> Text -> m [User]
   getAllUsers         :: Conn t -> m [User]
   addBook             :: Conn t -> Book -> m ()
   getBookByIsbn       :: Conn t -> ISBN -> m (Maybe Book)
@@ -61,14 +63,14 @@ instance Store InMemory STM where
   destroyConnection _ = pure ()
   initStore _ = pure ()
 
-  addUser       (InMemoryVar InMemoryStore{..}) user@User{..} = modifyTVar users (M.insert id user)
-  getUserById   (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar users
-  getUserByName (InMemoryVar InMemoryStore{..}) name2         = safeHead . filter (\User{..} -> name == name2) . M.elems <$> readTVar users
-  getAllUsers   (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar users
-  addBook       (InMemoryVar InMemoryStore{..}) book          = modifyTVar books (M.insert (isbn book) book)
-  getBookByIsbn (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar books
-  getAllBooks   (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar books
-  addCopy       var@(InMemoryVar InMemoryStore{..}) copy@Copy{..} = do
+  addUser        (InMemoryVar InMemoryStore{..}) user@User{..} = modifyTVar users (M.insert id user)
+  getUserById    (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar users
+  getUsersByName (InMemoryVar InMemoryStore{..}) searchTerm    = filter (\User{name=(Name name)} -> searchTerm `T.isInfixOf` name) . M.elems <$> readTVar users
+  getAllUsers    (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar users
+  addBook        (InMemoryVar InMemoryStore{..}) book          = modifyTVar books (M.insert (isbn book) book)
+  getBookByIsbn  (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar books
+  getAllBooks    (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar books
+  addCopy        var@(InMemoryVar InMemoryStore{..}) copy@Copy{..} = do
     book <- getBookByIsbn var bookIsbn
     case book of
       Nothing -> pure False
@@ -101,8 +103,8 @@ instance Store Postgres IO where
     void $ execute conn "INSERT into users (name,id) VALUES (?,?)" user
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
-  getUserByName     (PGConn pool) (Name un) = withResource pool $ \conn ->
-    safeHead <$> query conn "SELECT * FROM users WHERE name = ?" (Only un)
+  getUsersByName    (PGConn pool) searchTerm = withResource pool $ \conn ->
+    query conn "SELECT * FROM users WHERE ? LIKE '%' || name || '%'" (Only searchTerm)
   getAllUsers       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM users"
   -- | Books
@@ -115,15 +117,15 @@ instance Store Postgres IO where
   addCopy           (PGConn pool) copy = withResource pool $ \conn -> do
     _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
     return True
-  getCopiesByIsbn   (PGConn pool) isbn = withResource pool $ \conn -> 
-    query conn "SELECT * FROM copies WHERE copyOf = ? " (Only isbn) 
+  getCopiesByIsbn   (PGConn pool) isbn = withResource pool $ \conn ->
+    query conn "SELECT * FROM copies WHERE copyOf = ? " (Only isbn)
   addRental         (PGConn pool) rental = withResource pool $ \conn -> void $
     execute conn "INSERT into rentals (rentalId, copyId, userId, returnDate) VALUES (?,?,?,?)" rental
-  getRental         (PGConn pool) rentalId = withResource pool $ \conn -> 
+  getRental         (PGConn pool) rentalId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE rentalId = ?" (Only rentalId)
-  getRentalsByUser  (PGConn pool) userId = withResource pool $ \conn -> 
+  getRentalsByUser  (PGConn pool) userId = withResource pool $ \conn ->
     query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
-  getRentalsByCopy  (PGConn pool) copyId = withResource pool $ \conn -> 
+  getRentalsByCopy  (PGConn pool) copyId = withResource pool $ \conn ->
     query conn "SELECT * FROM rentals WHERE copyId = ?" (Only copyId)
 
 initSql :: Query

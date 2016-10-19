@@ -11,6 +11,7 @@ import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
+import qualified Data.Text                 as T
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
 import           Network.Wai
@@ -22,12 +23,12 @@ import           Servant.HTML.Blaze
 
 import           API
 import           Config
-import qualified Persistence               as P
-import           Types
-import           Html
-import           Text.Blaze.Html5
-import qualified Data.Vector as V
 import           Data.Time.Calendar
+import qualified Data.Vector               as V
+import           Html
+import qualified Persistence               as P
+import           Text.Blaze.Html5
+import           Types
 
 
 type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
@@ -48,20 +49,40 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|> index :<|> getAllUsers :<|> getUserById :<|> addUser
-    :<|> getAllBooks :<|> getBookByIsbn :<|> addBook
-    :<|> addCopy)
-
-serveDocs :: Pancake Text
-serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
+  (serveDocs :<|> index :<|>
+    (addUser :<|> getUsers :<|> getUserById :<|> updateUser :<|> deleteUser) :<|>
+    (addBook :<|> getAllBooks :<|> getBookByIsbn) :<|>
+    (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
+    (rentCopy :<|> completeRental)
+  )
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
-getAllUsers :: Pancake [User]
-getAllUsers = do
+serveDocs :: Pancake Text
+serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
+
+index :: Pancake Html
+index = return indexHtml
+
+--------------------------------------------------------------------------------
+
+-- Users
+
+addUser :: AddUserRequest -> Pancake AddUserResponse
+addUser AddUserRequest{..} = do
+  ServerConfig{..} <- ask
+  uuid <- liftIO $ InternalId <$> nextRandom
+  liftIO $ atomically $ P.addUser serverStore (User name uuid)
+  return $ AddUserResponse uuid
+
+getUsers :: Maybe Name -> Pancake [User]
+getUsers Nothing = do
   ServerConfig{..} <- ask
   liftIO $ atomically $ P.getAllUsers serverStore
+getUsers (Just (Name searchTerm)) = do
+  ServerConfig{..} <- ask
+  liftIO $ atomically $ P.getUsersByName serverStore searchTerm
 
 getUserById :: InternalId User -> Pancake User
 getUserById ident = do
@@ -71,12 +92,21 @@ getUserById ident = do
     Just user -> return user
     Nothing   -> throwError err404
 
-addUser :: AddUserRequest -> Pancake AddUserResponse
-addUser AddUserRequest{..} = do
+updateUser :: InternalId User -> UpdateUserRequest -> Pancake UpdateUserResponse
+updateUser = error "NYI"
+
+deleteUser :: InternalId User -> Pancake NoContent
+deleteUser = error "NYI"
+
+--------------------------------------------------------------------------------
+
+-- Books
+
+addBook :: Book -> Pancake NoContent
+addBook book = do
   ServerConfig{..} <- ask
-  uuid <- liftIO $ InternalId <$> nextRandom
-  liftIO $ atomically $ P.addUser serverStore (User name uuid)
-  return $ AddUserResponse uuid
+  liftIO $ atomically $ P.addBook serverStore book
+  return NoContent
 
 getAllBooks :: Pancake [Book]
 getAllBooks = do
@@ -91,11 +121,9 @@ getBookByIsbn isbn = do
     Just book -> return book
     Nothing   -> throwError err404
 
-addBook :: Book -> Pancake NoContent
-addBook book = do
-  ServerConfig{..} <- ask
-  liftIO $ atomically $ P.addBook serverStore book
-  return NoContent
+--------------------------------------------------------------------------------
+
+-- Copies
 
 addCopy :: ISBN -> AddCopyRequest -> Pancake AddCopyResponse
 addCopy isbn acr = do
@@ -107,17 +135,31 @@ addCopy isbn acr = do
   else
     AddCopyResponse Nothing False
 
-index :: Pancake Html
-index =
-  do books <- getAllBooks
-     return . booksHtml $ [test]
-       where test = Book
-               "lol-legit-isbn"
-               "A Story of Sadness"
-               (V.fromList ["Emily Olorin", "Oswyn Brent"])
-               (V.fromList ["Sadness Publishing"]) (fromGregorian 2016 09 30)
+getCopies :: ISBN -> Pancake [Copy]
+getCopies = error "NYI"
 
--- redirect = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
---            in throwError $
---               err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+updateCopy :: InternalId Copy -> UpdateCopyRequest -> Pancake NoContent
+updateCopy = error "NYI"
 
+deleteCopy :: InternalId Copy -> Pancake NoContent
+deleteCopy = error "NYI"
+
+--------------------------------------------------------------------------------
+
+-- Rentals
+
+rentCopy :: RentalRequest -> Pancake RentalResponse
+rentCopy = error "NYI"
+
+completeRental :: CompleteRentalRequest -> Pancake CompleteRentalResponse
+completeRental = error "NYI"
+
+--------------------------------------------------------------------------------
+
+-- Extra
+
+redirectToDocs :: Pancake a
+redirectToDocs = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
+                 in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+
+--------------------------------------------------------------------------------
