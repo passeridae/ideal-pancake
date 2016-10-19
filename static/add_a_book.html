@@ -5,11 +5,11 @@
     <script>
       function addBook () {
         var body  = {};
-        body["authors"] = [$("#author_id").text()];
-        body["publishers"] = [$("#pub_id").text()];
-        body["isbn"] = $("#isbn_id").text();
+        body["authors"] = [$("#author_id").val()];
+        body["publishers"] = [$("#pub_id").val()];
+        body["isbn"] = $("#isbn_id").val();
         body["date_of_publication"] = $("#date_id").val();
-        body["title"] = $("#title_id").text();
+        body["title"] = $("#title_id").val();
         postBooks (body,function () { alert ("Success"); }, function () {alert("Failure") });
       }
     </script>
