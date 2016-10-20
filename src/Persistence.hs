@@ -45,6 +45,10 @@ class Monad m => Store t m where
   addReservation        :: Conn t -> Reservation -> m ()
   getReservationsByIsbn :: Conn t -> ISBN -> m [Reservation]
   getReservationsByUser :: Conn t -> InternalId user -> m [Reservation]
+  addTag                :: Conn t -> Tag -> m ()
+  getTagByName          :: Conn t -> TagName -> m (Maybe Tag)
+  addBookTag            :: Conn t -> BookTag -> m ()
+  getBooksByTag         :: Conn t -> TagName -> m [ISBN]
 
 -- | Example InMemory implementation
 data InMemory
@@ -88,7 +92,10 @@ instance Store InMemory STM where
   addReservation        = undefined 
   getReservationsByIsbn = undefined 
   getReservationsByUser = undefined 
-
+  addTag                = undefined 
+  getTagByName          = undefined 
+  addBookTag            = undefined 
+  getBooksByTag         = undefined 
 
 data Postgres
 
@@ -140,6 +147,14 @@ instance Store Postgres IO where
     query conn "SELECT * FROM reservations WHERE reserveOf = ?" (Only isbn)
   getReservationsByUser (PGConn pool) userId = withResource pool $ \conn -> 
     query conn "SELECT * FROM reservations WHERE userId = ?" (Only userId)
+  addTag                (PGConn pool) tag = withResource pool $ \conn -> void $
+    execute conn "INSERT into tags (tagName, tagNotes) VALUES (?,?)" tag
+  getTagByName          (PGConn pool) tagName = withResource pool $ \conn ->
+    safeHead <$> query conn "SELECT * FROM tags WHERE tagName = ?" (Only tagName)
+  addBookTag            (PGConn pool) booktag = withResource pool $ \conn -> void $
+    execute conn "INSERT into booktags (bookTagId, tagOf, tagName) VALUES (?,?,?)" booktag
+  getBooksByTag         (PGConn pool) tagName = withResource pool $ \conn ->
+    fmap (map (\(BookTag _ isbn _) -> isbn)) $ query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) -- I think there should be a nicer way to do this?
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")
