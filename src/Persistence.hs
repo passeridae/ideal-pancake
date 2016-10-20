@@ -154,7 +154,7 @@ instance Store Postgres IO where
   addBookTag            (PGConn pool) booktag = withResource pool $ \conn -> void $
     execute conn "INSERT into booktags (bookTagId, tagOf, tagName) VALUES (?,?,?)" booktag
   getBooksByTag         (PGConn pool) tagName = withResource pool $ \conn ->
-    fmap (map (\(BookTag _ isbn _) -> isbn)) $ query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) -- I think there should be a nicer way to do this?
+    (map (\(BookTag _ isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) 
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")
