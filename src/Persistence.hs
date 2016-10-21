@@ -99,6 +99,8 @@ instance Store InMemory STM where
 
 data Postgres
 
+defaultPostgres :: Conf Postgres
+defaultPostgres = PGConf $ defaultConnectInfo { connectDatabase = "idealpancake" }
 
 safeHead :: [a] -> Maybe a
 safeHead (x:_) = Just x
