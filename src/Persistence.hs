@@ -116,7 +116,7 @@ instance Store Postgres IO where
   initStore         (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
   -- | Users
   addUser           (PGConn pool) user = withResource pool $ \conn ->
-    void $ execute conn "INSERT into users (name,id) VALUES (?,?)" user
+    void $ execute conn "INSERT into users (name,internalId) VALUES (?,?)" user
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
   getUsersByName    (PGConn pool) searchTerm = withResource pool $ \conn ->
