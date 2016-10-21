@@ -26,22 +26,29 @@ class Monad m => Store t m where
   data Conn t :: *
   data Conf t :: *
 
-  initConnection      :: Conf t -> m (Conn t)
-  destroyConnection   :: Conn t -> m ()
-  initStore           :: Conn t -> m ()
-  addUser             :: Conn t -> User -> m ()
-  getUserById         :: Conn t -> InternalId User -> m (Maybe User)
-  getUsersByName      :: Conn t -> Text -> m [User]
-  getAllUsers         :: Conn t -> m [User]
-  addBook             :: Conn t -> Book -> m ()
-  getBookByIsbn       :: Conn t -> ISBN -> m (Maybe Book)
-  getAllBooks         :: Conn t -> m [Book]
-  addCopy             :: Conn t -> Copy -> m Bool
-  getCopiesByIsbn     :: Conn t -> ISBN -> m [Copy]
-  addRental           :: Conn t -> Rental -> m ()
-  getRental           :: Conn t -> InternalId Rental -> m (Maybe Rental)
-  getRentalsByUser    :: Conn t -> InternalId User -> m [Rental]
-  getRentalsByCopy    :: Conn t -> InternalId Copy -> m [Rental]
+  initConnection        :: Conf t -> m (Conn t)
+  destroyConnection     :: Conn t -> m ()
+  initStore             :: Conn t -> m ()
+  addUser               :: Conn t -> User -> m ()
+  getUserById           :: Conn t -> InternalId User -> m (Maybe User)
+  getUsersByName        :: Conn t -> Text -> m [User]
+  getAllUsers           :: Conn t -> m [User]
+  addBook               :: Conn t -> Book -> m ()
+  getBookByIsbn         :: Conn t -> ISBN -> m (Maybe Book)
+  getAllBooks           :: Conn t -> m [Book]
+  addCopy               :: Conn t -> Copy -> m Bool
+  getCopiesByIsbn       :: Conn t -> ISBN -> m [Copy]
+  addRental             :: Conn t -> Rental -> m ()
+  getRental             :: Conn t -> InternalId Rental -> m (Maybe Rental)
+  getRentalsByUser      :: Conn t -> InternalId User -> m [Rental]
+  getRentalsByCopy      :: Conn t -> InternalId Copy -> m [Rental]
+  addReservation        :: Conn t -> Reservation -> m ()
+  getReservationsByIsbn :: Conn t -> ISBN -> m [Reservation]
+  getReservationsByUser :: Conn t -> InternalId user -> m [Reservation]
+  addTag                :: Conn t -> Tag -> m ()
+  getTagByName          :: Conn t -> TagName -> m (Maybe Tag)
+  addBookTag            :: Conn t -> BookTag -> m ()
+  getBooksByTag         :: Conn t -> TagName -> m [ISBN]
 
 -- | Example InMemory implementation
 data InMemory
@@ -77,14 +84,23 @@ instance Store InMemory STM where
       Just _  -> do
         modifyTVar copies $ M.insertWith (<>) bookIsbn [copy]
         pure True
-  getCopiesByIsbn  = undefined
-  addRental        = undefined
-  getRental        = undefined
-  getRentalsByCopy = undefined
-  getRentalsByUser = undefined
+  getCopiesByIsbn       = undefined
+  addRental             = undefined
+  getRental             = undefined
+  getRentalsByCopy      = undefined
+  getRentalsByUser      = undefined
+  addReservation        = undefined 
+  getReservationsByIsbn = undefined 
+  getReservationsByUser = undefined 
+  addTag                = undefined 
+  getTagByName          = undefined 
+  addBookTag            = undefined 
+  getBooksByTag         = undefined 
 
 data Postgres
 
+defaultPostgres :: Conf Postgres
+defaultPostgres = PGConf $ defaultConnectInfo { connectDatabase = "idealpancake" }
 
 safeHead :: [a] -> Maybe a
 safeHead (x:_) = Just x
@@ -100,7 +116,7 @@ instance Store Postgres IO where
   initStore         (PGConn pool) = withResource pool $ \conn -> void $ execute_ conn initSql
   -- | Users
   addUser           (PGConn pool) user = withResource pool $ \conn ->
-    void $ execute conn "INSERT into users (name,id) VALUES (?,?)" user
+    void $ execute conn "INSERT into users (name,internalId) VALUES (?,?)" user
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
   getUsersByName    (PGConn pool) searchTerm = withResource pool $ \conn ->
@@ -127,6 +143,20 @@ instance Store Postgres IO where
     query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
   getRentalsByCopy  (PGConn pool) copyId = withResource pool $ \conn ->
     query conn "SELECT * FROM rentals WHERE copyId = ?" (Only copyId)
+  addReservation        (PGConn pool) reservation = withResource pool $ \conn -> void $
+    execute conn "INSERT into reservations (reservationId, reserveOf, userId, requestDate) VALUES (?,?,?,?)" reservation
+  getReservationsByIsbn (PGConn pool) isbn = withResource pool $ \conn -> 
+    query conn "SELECT * FROM reservations WHERE reserveOf = ?" (Only isbn)
+  getReservationsByUser (PGConn pool) userId = withResource pool $ \conn -> 
+    query conn "SELECT * FROM reservations WHERE userId = ?" (Only userId)
+  addTag                (PGConn pool) tag = withResource pool $ \conn -> void $
+    execute conn "INSERT into tags (tagName, tagNotes) VALUES (?,?)" tag
+  getTagByName          (PGConn pool) tagName = withResource pool $ \conn ->
+    safeHead <$> query conn "SELECT * FROM tags WHERE tagName = ?" (Only tagName)
+  addBookTag            (PGConn pool) booktag = withResource pool $ \conn -> void $
+    execute conn "INSERT into booktags (bookTagId, tagOf, tagName) VALUES (?,?,?)" booktag
+  getBooksByTag         (PGConn pool) tagName = withResource pool $ \conn ->
+    (map (\(BookTag _ isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) 
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")

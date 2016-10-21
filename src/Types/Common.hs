@@ -82,3 +82,20 @@ instance ToParam (QueryParam "name" Name) where
   toParam _ = DocQueryParam "name" [] "name or name fragment to search for" Normal
 
 --------------------------------------------------------------------------------
+
+-- TagName
+
+newtype TagName = TagName Text
+  deriving (FromField, ToField, Generic, Eq, Ord, Show, IsString, FromJSON, ToJSON)
+
+instance ToSample TagName where
+  toSamples _ = samples $ map TagName ["sci-fi","fantasy", "depressing russian literature"]
+
+instance FromHttpApiData TagName where
+  parseUrlPiece piece = TagName <$> parseUrlPiece piece
+  parseQueryParam param = TagName <$> parseQueryParam param
+
+instance ToParam (QueryParam "tag" TagName) where
+  toParam _ = DocQueryParam "tag" [] "tag or tag fragment to search for" Normal
+
+--------------------------------------------------------------------------------

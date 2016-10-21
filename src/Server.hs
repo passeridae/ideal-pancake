@@ -31,7 +31,8 @@ type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
 startApp :: IO ()
 startApp = do
-  conn <- atomically $ P.initConnection P.X
+  conn <- P.initConnection P.defaultPostgres
+  P.initStore conn
   run 8080 (app $ ServerConfig conn)
 
 app :: ServerConfig -> Application
@@ -69,21 +70,21 @@ addUser :: AddUserRequest -> Pancake AddUserResponse
 addUser AddUserRequest{..} = do
   ServerConfig{..} <- ask
   uuid <- liftIO $ InternalId <$> nextRandom
-  liftIO $ atomically $ P.addUser serverStore (User name uuid)
+  liftIO $ P.addUser serverStore (User name uuid)
   return $ AddUserResponse uuid
 
 getUsers :: Maybe Name -> Pancake [User]
 getUsers Nothing = do
   ServerConfig{..} <- ask
-  liftIO $ atomically $ P.getAllUsers serverStore
+  liftIO $ P.getAllUsers serverStore
 getUsers (Just (Name searchTerm)) = do
   ServerConfig{..} <- ask
-  liftIO $ atomically $ P.getUsersByName serverStore searchTerm
+  liftIO $ P.getUsersByName serverStore searchTerm
 
 getUserById :: InternalId User -> Pancake User
 getUserById ident = do
   ServerConfig{..} <- ask
-  maybeUser <- liftIO $ atomically $ P.getUserById serverStore ident
+  maybeUser <- liftIO $ P.getUserById serverStore ident
   case maybeUser of
     Just user -> return user
     Nothing   -> throwError err404
@@ -101,18 +102,18 @@ deleteUser = error "NYI"
 addBook :: Book -> Pancake NoContent
 addBook book = do
   ServerConfig{..} <- ask
-  liftIO $ atomically $ P.addBook serverStore book
+  liftIO $ P.addBook serverStore book
   return NoContent
 
 getAllBooks :: Pancake [Book]
 getAllBooks = do
   ServerConfig{..} <- ask
-  liftIO $ atomically $ P.getAllBooks serverStore
+  liftIO $ P.getAllBooks serverStore
 
 getBookByIsbn :: ISBN -> Pancake Book
 getBookByIsbn isbn = do
   ServerConfig{..} <- ask
-  maybeBook <- liftIO $ atomically $ P.getBookByIsbn serverStore isbn
+  maybeBook <- liftIO $ P.getBookByIsbn serverStore isbn
   case maybeBook of
     Just book -> return book
     Nothing   -> throwError err404
@@ -125,7 +126,7 @@ addCopy :: ISBN -> AddCopyRequest -> Pancake AddCopyResponse
 addCopy isbn acr = do
   ServerConfig{..} <- ask
   copy@Copy{..} <- liftIO $ acrToCopy isbn acr
-  successful <- liftIO $ atomically $ P.addCopy serverStore copy
+  successful <- liftIO $ P.addCopy serverStore copy
   return $ if successful then
     AddCopyResponse (Just id) True
   else

@@ -25,6 +25,8 @@ library
                        Types.Common
                        Types.Copy
                        Types.Rental
+                       Types.Reservation
+                       Types.Tag
                        Types.User
   build-depends:       base >= 4.7 && < 5
                      , aeson
