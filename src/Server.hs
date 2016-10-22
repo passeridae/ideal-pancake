@@ -46,8 +46,8 @@ server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|> 
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
-    (addBook :<|> getBooks :<|> getBookByIsbn) :<|>
-    (addCopy :<|> getCopies :<|> getCopyById :<|> updateCopy :<|> deleteCopy) :<|>
+    (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
+    (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser)
   )
 
@@ -118,6 +118,13 @@ getBookByIsbn isbn = do
   case maybeBook of
     Just book -> return book
     Nothing   -> throwError err404
+
+deleteBook :: ISBN -> Pancake NoContent
+deleteBook isbn = do
+  ServerConfig{..} <- ask
+  _ <- getBookByIsbn isbn
+  liftIO $ P.deleteBook serverStore isbn
+  return NoContent
 
 --------------------------------------------------------------------------------
 

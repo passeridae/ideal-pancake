@@ -35,6 +35,7 @@ type DeleteUser  = "users" :> Capture "user_id" (InternalId User) :> PostNoConte
 
 type Books = AddBook
         :<|> GetBooks :<|> GetBookByIsbn
+        :<|> DeleteBook
 
 -- Create
 type AddBook       = "books" :> ReqBody '[JSON] Book :> PostNoContent '[JSON] NoContent
@@ -44,7 +45,7 @@ type GetBookByIsbn = "books" :> Capture "book_isbn" ISBN :> Get '[JSON]  Book
 -- Update
 --type UpdateBook
 -- Delete
---type DeleteBook
+type DeleteBook    = "books" :> Capture "book_isbn" ISBN :> PostNoContent '[JSON] NoContent
 
 --------------------------------------------------------------------------------
 

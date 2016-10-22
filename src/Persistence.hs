@@ -34,6 +34,7 @@ class Monad m => Store t m where
   getBookByIsbn         :: Conn t -> ISBN -> m (Maybe Book)
   searchBooksByTitle    :: Conn t -> Text -> m [Book]
   getAllBooks           :: Conn t -> m [Book]
+  deleteBook            :: Conn t -> ISBN -> m ()
   addCopy               :: Conn t -> Copy -> m Bool
   updateCopy            :: Conn t -> InternalId Copy -> Notes -> m ()
   deleteCopy            :: Conn t -> InternalId Copy -> m ()
@@ -92,6 +93,13 @@ instance Store Postgres IO where
     safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM books"
+  deleteBook        (PGConn pool) isbn = do
+      copies  <- getCopiesByIsbn (PGConn pool) isbn
+      forM_ copies $ \Copy{..} -> do
+        withResource pool $ \conn -> execute conn "DELETE FROM rentals WHERE copyId = ?" (Only id)
+        withResource pool $ \conn -> execute conn "DELETE FROM copies  WHERE copyId = ?" (Only id)
+      withResource pool $ \conn -> execute conn "DELETE FROM books where bookId = ?" (Only isbn)
+      return ()
   addCopy           (PGConn pool) copy = withResource pool $ \conn -> do
     _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
     return True
@@ -108,7 +116,7 @@ instance Store Postgres IO where
   getRental         (PGConn pool) rentalId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE rentalId = ?" (Only rentalId)
   getRentalsByUser  (PGConn pool) userId = withResource pool $ \conn ->
-    query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
+    query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)  
   getCurrentRentalByCopy (PGConn pool) copyId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE copyId = ? AND returnDate is NULL" (Only copyId)
   completeRental (PGConn pool) rentalId returnDate = withResource pool $ \conn -> void $
