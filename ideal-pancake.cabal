@@ -19,7 +19,6 @@ library
                        Config
                        Persistence
                        Server
-                       Html
                        Types
                        Types.Book
                        Types.Common

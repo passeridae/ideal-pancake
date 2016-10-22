@@ -140,3 +140,13 @@ var postRentalsComplete = function(body, onSuccess, onError)
     , type: 'POST'
     });
 }
+
+var getRentalsByUser_id = function(user_id, onSuccess, onError)
+{
+  $.ajax(
+    { url: '/rentals/' + encodeURIComponent(user_id) + ''
+    , success: onSuccess
+    , error: onError
+    , type: 'GET'
+    });
+}

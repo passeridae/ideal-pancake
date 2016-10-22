@@ -21,9 +21,7 @@ import           Servant.Docs              hiding (API, notes)
 
 import           API
 import           Config
-import           Html
 import qualified Persistence               as P
-import           Text.Blaze.Html5
 import           Types
 
 
@@ -46,7 +44,7 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|> index :<|>
+  (serveDocs :<|> 
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn) :<|>
     (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
@@ -58,9 +56,6 @@ staticFiles = serveDirectory "static"
 
 serveDocs :: Pancake Text
 serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
-
-index :: Pancake Html
-index = return indexHtml
 
 --------------------------------------------------------------------------------
 
