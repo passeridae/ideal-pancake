@@ -19,7 +19,6 @@ type API = Users :<|> Books :<|> Copies :<|> Rentals
 
 type Users = AddUser
         :<|> GetUsers :<|> GetUserById
-        :<|> UpdateUser
         :<|> DeleteUser
 
 -- Create
@@ -27,8 +26,6 @@ type AddUser     = "users" :> ReqBody '[JSON] AddUserRequest :> Post '[JSON] Add
 -- Read
 type GetUsers    = "users" :> QueryParam "name" Name :> Get '[JSON] [User]
 type GetUserById = "users" :> Capture "user_id" (InternalId User) :> Get '[JSON] User
--- Update
-type UpdateUser  = "users" :> Capture "user_id" (InternalId User) :> ReqBody '[JSON] UpdateUserRequest :> Post '[JSON] UpdateUserResponse
 -- Delete
 type DeleteUser  = "users" :> Capture "user_id" (InternalId User) :> PostNoContent '[JSON] NoContent
 

@@ -41,14 +41,13 @@ instance ToRow Tag where
 -- BookTag
 
 data BookTag = BookTag
-  { id          :: InternalId BookTag
-  , tagOf       :: ISBN
+  { tagOf       :: ISBN
   , tagName     :: TagName
   } deriving (Generic, Show)
 
 instance FromRow BookTag where
-  fromRow = BookTag <$> field <*> field <*> field
+  fromRow = BookTag <$> field <*> field
 
 instance ToRow BookTag where
-  toRow (BookTag id tagOf (TagName tn))  = toRow (id, tagOf, tn)
+  toRow (BookTag tagOf (TagName tn))  = toRow (tagOf, tn)
 --------------------------------------------------------------------------------

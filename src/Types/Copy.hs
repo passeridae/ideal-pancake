@@ -14,6 +14,8 @@ import           Data.Text                          (Text)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
+import           Database.PostgreSQL.Simple.FromField
+import           Database.PostgreSQL.Simple.ToField
 import           GHC.Generics
 import           Prelude                            hiding (id)
 import           Servant
@@ -33,10 +35,10 @@ data Copy = Copy
   } deriving (Generic, Show)
 
 instance FromRow Copy where
-  fromRow = Copy <$> field <*> field <*> (Notes <$> field)
+  fromRow = Copy <$> field <*> field <*> field
 
 instance ToRow Copy where
-  toRow Copy{..} = toRow (id, bookIsbn, unNotes notes)
+  toRow Copy{..} = toRow (id, bookIsbn, notes)
 
 instance ToJSON Copy where
   toJSON = genericToJSON defaultAeson
@@ -108,7 +110,7 @@ type UpdateCopyRequest = AddCopyRequest
 
 newtype Notes = Notes
   { unNotes :: Maybe Text
-  } deriving (Generic, Show, Ord, Eq, FromJSON, ToJSON)
+  } deriving (Generic, Show, Ord, Eq, FromJSON, ToJSON, ToField, FromField)
 
 instance ToSample Notes where
   toSamples _ = samples $ map Notes [Just "Damaged back cover", Just "Coffee stains throughout", Nothing]

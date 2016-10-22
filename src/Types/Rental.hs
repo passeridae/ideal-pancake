@@ -31,14 +31,15 @@ data Rental = Rental
   { id         :: InternalId Rental
   , copyId     :: InternalId Copy
   , userId     :: InternalId User
-  , returnDate :: Day
+  , dueDate    :: Day
+  , returnDate :: Maybe Day
   } deriving (Generic, Show)
 
 instance FromRow Rental where
-  fromRow = Rental <$> field <*> field <*> field <*> field
+  fromRow = Rental <$> field <*> field <*> field <*> field <*> field
 
 instance ToRow Rental where
-  toRow Rental{..} = toRow (id, copyId, userId, returnDate)
+  toRow Rental{..} = toRow (id, copyId, userId, dueDate, returnDate)
 --------------------------------------------------------------------------------
 
 -- RentCopy
@@ -46,7 +47,7 @@ instance ToRow Rental where
 data RentalRequest = RentalRequest
   { copyId     :: InternalId Copy
   , userId     :: InternalId User
-  , returnDate :: Day
+  , dueDate    :: Day
   } deriving (Generic, Show)
 
 instance ToJSON RentalRequest where
