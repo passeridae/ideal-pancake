@@ -11,7 +11,9 @@
      body {
        padding-top: 70px;
      }
-
+     #stub1 {
+         visibility: hidden;
+     }
      #result_container {
        visibility: hidden;
      }
@@ -40,9 +42,9 @@
     </script>
     <script>
       function searchBook () {
-        $("#result_container").css("visibility", "visible");
+        $("#stub1").css("visibility", "visible");
         getBooks($("#search_id").val(), function(returned_books) {
-          $("#result_container").remove();
+          $("#stub1").remove();
           var table = $("#books_table");
           table.empty();
           returned_books.forEach(function(book) {
@@ -59,16 +61,16 @@
               openCopies(book);
             });
 
-            var row = $("<tr>");
             row.append(title);
             row.append(author);
             row.append(isbn);
 
             table.append(row);
           });
-          $("#page2").css("visibility", "visible");
+          $("#result_container").css("visibility", "visible");
         }, function () {
-          $("#stub").remove();
+          $("#stub1").remove();
+          $("#result_container").css("visibility", "visible");
           var td = $("<td>");
           td.text("Error loading books");
           var tr = $("<tr>");
@@ -81,16 +83,13 @@
     </script>
     <script>
       function openCopies(book) {
-        $("add_note_container").css("visibility", "visible");
-        var title = "";
-        var author = "";
-        var isbn = "";
-        title.text(book.title);
-        author.text(book.authors.join(' ,'));
-        isbn.text(book.isbn);
-        $("#title_id").var(title);
-        $("#author_id").var(author);
-        $("#isbn_id").var(isbn);
+        $("#add_note_container").css("visibility", "visible");
+        var title = book.title;
+        var author = book.authors.join(' ,');
+        var isbn = book.isbn;
+        $("#title_id").attr("value", title);
+        $("#author_id").attr("value", author);
+        $("#isbn_id").attr("value", isbn);
       }
     </script>
   </head>
@@ -132,9 +131,13 @@
 
         <br>
 
+        <div id="stub1">
+          <h3> Loading... </h3>
+        </div>
+
         <div class="container" id="result_container">
           <h1>Matching Books</h1>
-          <table  class="table table-hover table-striped">
+          <table class="table table-hover table-striped">
             <thead>
               <tr>
                 <th> Name </th>

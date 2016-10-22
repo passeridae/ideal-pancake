@@ -59,7 +59,7 @@
       getCopiesByCopy_id(rental.copyId,function (copy) {
         getBooksByBook_isbn(copy.copyOf, function (book) {
           title.text(book.title);
-        }
+        }, function () {alert("failure");}); 
         }, function () {
         alert("failure");
       });
