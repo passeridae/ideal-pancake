@@ -61,55 +61,6 @@ indexHtml = do
           button ! type_ "submit" ! class_ "btn btn-default" $ text "Login"
     booksHtml []
 
-booksHtml :: [T.Book] -> Html
-booksHtml books = do
-  headerHtml
-  body $ do
-    div ! class_ "contaienr hidden-xs hidden-sm" $ do
-      colMd 3 . b $ text "Title"
-      colMd 3 . b $ text "Authors"
-      colMd 2 . b $ text "Publishers"
-      colMd 2 . b $ text "Year"
-      colMd 2 . b $ text "ISBN"
-    books `forM_` eachBook
-    where
-      eachBook :: T.Book -> Html
-      eachBook (T.Book isbn bookTitle authors publishers year) = do
-        colMd 3 . text   $ bookTitle
-        colMd 3 . rowsOf $ authors
-        colMd 2 . rowsOf $ publishers
-        colMd 2 . text   $ showYear year
-        colMd 2 . string $ show isbn
-
-colMd :: Int -> Html -> Html
-colMd n = div ! class_ (stringValue ("col-md-" <> show n))
-
-{-
-booksHtml :: [T.Book] -> Html
-booksHtml bks = do
-  table ! class_ "table-responsive" $ do
-    thead $ do
-      tr $ do
-        th $ text "Title"
-        th $ text "Authors"
-        th $ text "Publishers"
-        th $ text "Year"
-        th $ text "ISBN"
-    tbody $ do
-      bks `forM_` book
-  where
-    book (T.Book isbn bookTitle authors publishers year) = do
-      tr $ do
-        td . text   $ bookTitle
-        td . rowsOf $ authors
-        td . rowsOf $ publishers
-        td . text   $ showYear year
-        td . string $ show isbn
--}
-
--- rowsHtml :: (Foldable t) => t Html -> Html
--- rowsHtml as = as `forM_` row
-
 rowsOf :: (Foldable t) => t Text -> Html
 rowsOf as =
   container $
