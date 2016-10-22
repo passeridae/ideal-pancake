@@ -78,8 +78,8 @@ type Rentals = RentCopy
 -- Create
 type RentCopy         = "rentals" :> ReqBody '[JSON] RentalRequest :> Post '[JSON] RentalResponse
 -- Read
-type GetRentalsByUser = "rentals" :> Capture "user_id" (InternalId User) :> Get '[JSON] [Rental]
-type GetRentalByCopy  = "rentals" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Rental
+type GetRentalsByUser = "rentals" :> "user" :> Capture "user_id" (InternalId User) :> Get '[JSON] [Rental]
+type GetRentalByCopy  = "rentals" :> "copy" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Rental
 -- Update
 type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRentalRequest :> Post '[JSON] CompleteRentalResponse
 
