@@ -56,8 +56,8 @@
     }
 
     function findTitle (title, rental) {
-      getCopiesByCopy_id(rental.copyId,function (copy) {
-        getBooksByBook_isbn(copy.copyOf, function (book) {
+      getCopiesByCopy_id(rental.copy_id,function (copy) {
+        getBooksByBook_isbn(copy.book_isbn, function (book) {
           title.text(book.title);
         }, function () {alert("failure");}); 
         }, function () {
@@ -75,13 +75,14 @@
           title.text("loading");
           findTitle(title,rental);
           var dueDate = $("<td>");
-          dueDate.text(rental.dueDate);
+          dueDate.text(rental.due_date);
           var id = $("<td>");
-          id.text(user.copyId);
+          id.text(rental.copy_id);
           var row = $("<tr>");
           row.click(function () {
             returnRental(rental);
           });
+          row.append(title);
           row.append(id);
           row.append(dueDate);
           table.append(row);
@@ -191,8 +192,8 @@
     return ret;
   }
 
-  function returnBook (rental) {
-    postRentalsComplete (rental, function () {
+  function returnRental (rental) {
+    postRentalsComplete ({"rental_id" : rental.id}, function () {
         alert("Success");
       }, function () {
         alert("Failure");
