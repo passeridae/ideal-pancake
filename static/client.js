@@ -161,10 +161,20 @@ var postRentalsComplete = function(body, onSuccess, onError)
     });
 }
 
-var getRentalsByUser_id = function(user_id, onSuccess, onError)
+var getRentalsUserByUser_id = function(user_id, onSuccess, onError)
 {
   $.ajax(
-    { url: '/rentals/' + encodeURIComponent(user_id) + ''
+    { url: '/rentals/user/' + encodeURIComponent(user_id) + ''
+    , success: onSuccess
+    , error: onError
+    , type: 'GET'
+    });
+}
+
+var getRentalsCopyByCopy_id = function(copy_id, onSuccess, onError)
+{
+  $.ajax(
+    { url: '/rentals/copy/' + encodeURIComponent(copy_id) + ''
     , success: onSuccess
     , error: onError
     , type: 'GET'
