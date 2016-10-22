@@ -11,7 +11,9 @@
      body {
        padding-top: 70px;
      }
-
+     #stub1 {
+         visibility: hidden;
+     }
      #result_container {
        visibility: hidden;
      }
@@ -40,9 +42,9 @@
     </script>
     <script>
       function searchBook () {
-        $("#result_container").css("visibility", "visible");
+        $("#stub1").css("visibility", "visible");
         getBooks($("#search_id").val(), function(returned_books) {
-          $("#result_container").remove();
+          $("#stub1").remove();
           var table = $("#books_table");
           table.empty();
           returned_books.forEach(function(book) {
@@ -66,9 +68,10 @@
 
             table.append(row);
           });
-          $("#page2").css("visibility", "visible");
+          $("#result_container").css("visibility", "visible");
         }, function () {
-          $("#stub").remove();
+          $("#stub1").remove();
+          $("#result_container").css("visibility", "visible");
           var td = $("<td>");
           td.text("Error loading books");
           var tr = $("<tr>");
@@ -132,9 +135,13 @@
 
         <br>
 
+        <div id="stub1">
+          <h3> Loading... </h3>
+        </div>
+
         <div class="container" id="result_container">
           <h1>Matching Books</h1>
-          <table  class="table table-hover table-striped">
+          <table class="table table-hover table-striped">
             <thead>
               <tr>
                 <th> Name </th>
