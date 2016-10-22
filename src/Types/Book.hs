@@ -77,3 +77,20 @@ instance ToRow Book where
   toRow (Book a b c d e) = toRow (a, b, c, d, e)
 
 --------------------------------------------------------------------------------
+
+data DeleteBookRequest = DeleteBookRequest
+  { isbn :: ISBN
+  } deriving (Generic, Show, Ord, Eq)
+  
+instance ToJSON DeleteBookRequest where
+  toJSON = genericToJSON defaultAeson
+
+instance FromJSON DeleteBookRequest where
+  parseJSON = genericParseJSON defaultAeson
+
+instance ToSample DeleteBookRequest where
+  toSamples _ = do
+    (t, x) <- toSamples (Proxy :: Proxy ISBN)
+    return (t, DeleteBookRequest x)
+
+--------------------------------------------------------------------------------
