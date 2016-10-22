@@ -10,7 +10,7 @@ import           Text.Blaze.Html5
 
 import           Types
 
-type FullAPI = StaticFiles :<|> (Docs :<|> Index :<|> API)
+type FullAPI = StaticFiles :<|> (Docs :<|> API)
 type API = Users :<|> Books :<|> Copies :<|> Rentals
 
 --------------------------------------------------------------------------------
@@ -35,6 +35,7 @@ type DeleteUser  = "users" :> Capture "user_id" (InternalId User) :> PostNoConte
 
 type Books = AddBook
         :<|> GetBooks :<|> GetBookByIsbn
+        :<|> DeleteBook
 
 -- Create
 type AddBook       = "books" :> ReqBody '[JSON] Book :> PostNoContent '[JSON] NoContent
@@ -44,7 +45,7 @@ type GetBookByIsbn = "books" :> Capture "book_isbn" ISBN :> Get '[JSON]  Book
 -- Update
 --type UpdateBook
 -- Delete
---type DeleteBook
+type DeleteBook    = "books" :> Capture "book_isbn" ISBN :> PostNoContent '[JSON] NoContent
 
 --------------------------------------------------------------------------------
 
@@ -52,6 +53,7 @@ type GetBookByIsbn = "books" :> Capture "book_isbn" ISBN :> Get '[JSON]  Book
 
 type Copies = AddCopy
          :<|> GetCopies
+         :<|> GetCopyById
          :<|> UpdateCopy
          :<|> DeleteCopy
 
@@ -59,6 +61,7 @@ type Copies = AddCopy
 type AddCopy    = "books"  :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] AddCopyResponse
 -- Read
 type GetCopies  = "books"  :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
+type GetCopyById = "copies" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Copy
 -- Update
 type UpdateCopy = "copies" :> Capture "copy_id" (InternalId Copy) :> ReqBody '[JSON] UpdateCopyRequest :> PostNoContent '[JSON] NoContent
 -- Delete
@@ -70,15 +73,16 @@ type DeleteCopy = "copies" :> Capture "copy_id" (InternalId Copy) :> DeleteNoCon
 
 type Rentals = RentCopy
           :<|> CompleteRental :<|> GetRentalsByUser
+          :<|> GetRentalByCopy
 
 -- Create
 type RentCopy         = "rentals" :> ReqBody '[JSON] RentalRequest :> Post '[JSON] RentalResponse
 -- Read
 type GetRentalsByUser = "rentals" :> Capture "user_id" (InternalId User) :> Get '[JSON] [Rental]
+type GetRentalByCopy  = "rentals" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Rental
 -- Update
 type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRentalRequest :> Post '[JSON] CompleteRentalResponse
 
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
 type StaticFiles = "static" :> Raw
-type Index = "index.html" :> Get '[HTML] Html

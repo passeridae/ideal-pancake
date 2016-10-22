@@ -21,9 +21,7 @@ import           Servant.Docs              hiding (API, notes)
 
 import           API
 import           Config
-import           Html
 import qualified Persistence               as P
-import           Text.Blaze.Html5
 import           Types
 
 
@@ -46,11 +44,11 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|> index :<|>
+  (serveDocs :<|> 
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
-    (addBook :<|> getBooks :<|> getBookByIsbn) :<|>
-    (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
-    (rentCopy :<|> completeRental :<|> getRentalsByUser)
+    (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
+    (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
+    (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
   )
 
 staticFiles :: Server Raw
@@ -58,9 +56,6 @@ staticFiles = serveDirectory "static"
 
 serveDocs :: Pancake Text
 serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
-
-index :: Pancake Html
-index = return indexHtml
 
 --------------------------------------------------------------------------------
 
@@ -123,6 +118,13 @@ getBookByIsbn isbn = do
   case maybeBook of
     Just book -> return book
     Nothing   -> throwError err404
+
+deleteBook :: ISBN -> Pancake NoContent
+deleteBook isbn = do
+  ServerConfig{..} <- ask
+  _ <- getBookByIsbn isbn
+  liftIO $ P.deleteBook serverStore isbn
+  return NoContent
 
 --------------------------------------------------------------------------------
 
@@ -187,6 +189,15 @@ getRentalsByUser ident = do
   ServerConfig{..} <- ask
   _ <- getUserById ident
   liftIO $ P.getRentalsByUser serverStore ident
+
+getRentalByCopy :: InternalId Copy -> Pancake Rental
+getRentalByCopy ident = do
+  ServerConfig{..} <- ask
+  _ <- getCopyById ident
+  mRental <- liftIO $ P.getCurrentRentalByCopy serverStore ident
+  case mRental of
+    Nothing -> throwError err404
+    Just rental -> return rental    
 
 completeRental :: CompleteRentalRequest -> Pancake CompleteRentalResponse
 completeRental CompleteRentalRequest{..} = do

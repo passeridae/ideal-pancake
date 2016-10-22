@@ -73,6 +73,16 @@ var getBooksByBook_isbn = function(book_isbn, onSuccess, onError)
     });
 }
 
+var postBooksByBook_isbn = function(book_isbn, onSuccess, onError)
+{
+  $.ajax(
+    { url: '/books/' + encodeURIComponent(book_isbn) + ''
+    , success: onSuccess
+    , error: onError
+    , type: 'POST'
+    });
+}
+
 var postBooksByBook_isbnCopies = function(book_isbn, body, onSuccess, onError)
 {
   $.ajax(
@@ -89,6 +99,16 @@ var getBooksByBook_isbnCopies = function(book_isbn, onSuccess, onError)
 {
   $.ajax(
     { url: '/books/' + encodeURIComponent(book_isbn) + '/copies'
+    , success: onSuccess
+    , error: onError
+    , type: 'GET'
+    });
+}
+
+var getCopiesByCopy_id = function(copy_id, onSuccess, onError)
+{
+  $.ajax(
+    { url: '/copies/' + encodeURIComponent(copy_id) + ''
     , success: onSuccess
     , error: onError
     , type: 'GET'
@@ -138,5 +158,15 @@ var postRentalsComplete = function(body, onSuccess, onError)
     , contentType: 'application/json'
     , error: onError
     , type: 'POST'
+    });
+}
+
+var getRentalsByUser_id = function(user_id, onSuccess, onError)
+{
+  $.ajax(
+    { url: '/rentals/' + encodeURIComponent(user_id) + ''
+    , success: onSuccess
+    , error: onError
+    , type: 'GET'
     });
 }
