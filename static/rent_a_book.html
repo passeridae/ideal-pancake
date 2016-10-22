@@ -11,13 +11,14 @@
       body {
         padding-top: 70px;
       }
-     
-      
 
      #stub1 {
          visibility: hidden;
      }
      #page2 {
+         visibility: hidden;
+     }
+     #page3 {
          visibility: hidden;
      }
     </style>
@@ -38,10 +39,14 @@
           isbn.text(book.isbn);
 
           var row = $("<tr>");
+          row.css("cursor", "pointer");
+          row.click(function() {
+            openCopies(book);
+          });
+            
           row.append(title);
           row.append(author);
           row.append(isbn);
-
           table.append(row);
         });
         $("#page2").css("visibility", "visible");
@@ -56,6 +61,20 @@
         table.append(tr);
       });
     }
+
+     function openCopies(book) {
+         $("#page2").css("visibility", "hidden");
+         $("#page3").css("visibility", "visible");
+         
+         getBooksByBook_isbnCopies(book.isbn, function(copies) {
+             copies.forEach(function (copy) {
+                 getRentalsByCopy_id(copy.id, function(rentals) {
+                     var row = $("<tr>");
+
+                 });
+             });
+         },
+     }
     </script>
 
   </head>
@@ -114,13 +133,31 @@
             </tr>
           </thead>
           <tbody id="books_table">
+            <!-- Books table injected here. -->
           </tbody>
         </table>
       </div>
     </div><!-- /.container -->
 
     <!-- TODO: Make this visible after "rent" button is pressed-->
-
+    <div class="container" id="page3">
+      <h1>Copies</h1>
+      <h3 id="book_title">book_title</h3>
+      
+      <table class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Id </th>
+            <th> Notes </th>
+            <th> Status </th>
+        </thead>
+        <thead id="copies_table">
+          <!-- Copies -->
+        </thead>
+      </table>
+      
+    </div>
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
