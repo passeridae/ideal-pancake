@@ -31,18 +31,6 @@ var getUsersByUser_id = function(user_id, onSuccess, onError)
     });
 }
 
-var postUsersByUser_id = function(user_id, body, onSuccess, onError)
-{
-  $.ajax(
-    { url: '/users/' + encodeURIComponent(user_id) + ''
-    , success: onSuccess
-    , data: JSON.stringify(body)
-    , contentType: 'application/json'
-    , error: onError
-    , type: 'POST'
-    });
-}
-
 var postUsersByUser_id = function(user_id, onSuccess, onError)
 {
   $.ajax(
@@ -65,10 +53,10 @@ var postBooks = function(body, onSuccess, onError)
     });
 }
 
-var getBooks = function(onSuccess, onError)
+var getBooks = function(title, onSuccess, onError)
 {
   $.ajax(
-    { url: '/books'
+    { url: '/books' + '?title=' + encodeURIComponent(title)
     , success: onSuccess
     , error: onError
     , type: 'GET'

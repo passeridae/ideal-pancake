@@ -32,6 +32,11 @@ type Title = Text
 
 --------------------------------------------------------------------------------
 
+-- Title
+
+instance ToCapture (Capture "title" Text) where
+  toCapture _ = DocCapture "title" "title of the book"
+
 -- ISBN
 
 newtype ISBN = ISBN

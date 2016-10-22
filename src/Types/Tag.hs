@@ -6,21 +6,15 @@
 
 module Types.Tag where
 
-import           Control.Arrow
-import           Data.Aeson
-import           Data.Proxy
 import           Data.Text                          (Text)
-import           Data.Time
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.ToRow
 import           GHC.Generics
 import           Prelude                            hiding (id)
 import qualified Prelude                            (id)
-import           Servant.Docs
 
 import           Types.Common
 import           Types.Book
-import           Types.User
 
 --------------------------------------------------------------------------------
 
