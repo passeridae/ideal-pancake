@@ -54,6 +54,16 @@
         table.append(tr);
       });
     }
+
+    function findTitle (title, rental) {
+      getCopiesByCopy_id(rental.copyId,function (copy) {
+        getBooksByBook_isbn(copy.copyOf, function (book) {
+          title.text(book.title);
+        }
+        }, function () {
+        alert("failure");
+      });
+    }
     
     function findRentals (user) {
       getRentalsByUser_id (user.id, function (rentals) {
@@ -61,6 +71,9 @@
         var table = $("#rental_table");
         table.empty();
         targets.forEach(function(rental) {
+          var title = $("<td>");
+          title.text("loading");
+          findTitle(title,rental);
           var dueDate = $("<td>");
           dueDate.text(rental.dueDate);
           var id = $("<td>");
