@@ -24,44 +24,55 @@
     </style>
     <script src="./client.js"></script>
     <script>
+     function dueDate() {
+         // magic from stack overflow
+         return '2016-11-08';
+
+         var fortnightAway = new Date(+new Date + 12096e5);
+         var day = fortnightAway.getDate();
+         var month = fortnightAway.getMonth() + 1;
+         var year = fortnightAway.getFullYear();
+         return year + '-' + month + '-' + day;
+     }
+
      function searchBooks () {
-      $("#stub1").css("visibility", "visible");
-      getBooks($("#title_id").val(), function(returned_books) {
-        $("#stub1").remove();
-        var table = $("#books_table");
-        table.empty();
-        returned_books.forEach(function(book) {
-          var title = $("<td>");
-          title.text(book.title);
-          var author = $("<td>");
-          author.text(book.authors.join(', '));
-          var isbn = $("<td>");
-          isbn.text(book.isbn);
+         $("#stub1").css("visibility", "visible");
+         getBooks($("#title_id").val(), function(returned_books) {
+             $("#stub1").remove();
+             var table = $("#books_table");
+             table.empty();
+             returned_books.forEach(function(book) {
+                 var row = $("<tr>");
+                 var title = $("<td>");
+                 title.text(book.title);
+                 var author = $("<td>");
+                 author.text(book.authors.join(', '));
+                 var isbn = $("<td>");
+                 isbn.text(book.isbn);
 
-          var row = $("<tr>");
-          row.css("cursor", "pointer");
-          row.click(function() {
-            openCopies(book);
-          });
-            
-          row.append(title);
-          row.append(author);
-          row.append(isbn);
-          table.append(row);
-        });
-        $("#page2").css("visibility", "visible");
-      }, function () {
-        $("#stub").remove();
-        var td = $("<td>");
-        td.text("Error loading books");
-        var tr = $("<tr>");
-        tr.append(td);
+                 row.css("cursor", "pointer");
+                 row.click(function() {
+                     openCopies(book);
+                 });
+                 
+                 row.append(title);
+                 row.append(author);
+                 row.append(isbn);
+                 table.append(row);
+             });
+             $("#page2").css("visibility", "visible");
+         }, function () {
+             $("#stub").remove();
+             var td = $("<td>");
+             td.text("Error loading books");
+             var tr = $("<tr>");
+             tr.append(td);
 
-        var table = $("#books_table");
-        table.append(tr);
-      });
-    }
-
+             var table = $("#books_table");
+             table.append(tr);
+         });
+     }
+     
      function openCopies(book) {
          $("#page3").css("visibility", "visible");
          $("#book_title").text(book.title);
@@ -82,19 +93,59 @@
                          available.text("Available");
                          row.append(available);
                          row.click(function() {
-                             getUsers('', function(users) {
-                                 var user = users[0];
-                                 postRentals({
-                                     due_date: "2016-10-22",
-                                     copy_id: copy.id,
-                                     user_id: user.id,
-                                 });
-                             })
+                             selectUser(copy);
                          });
                          table.append(row);
                      }
                  });
              });
+         });
+     }
+
+     function selectUser(copy) {
+         $("#page1").hide();
+         $("#page2").hide();
+         $("#page3").hide();
+         
+         getUsers("", function(users, _status, _jqXHR) {
+             var table = $("#users_table");
+             users.forEach(function (user, i, _arr) {
+                 var name = $("<td>");
+                 name.text(user.name);
+                 var id = $("<td>");
+                 id.text(user.id);
+                 
+                 var row = $("<tr>");
+                 row.append(name);
+                 row.append(id);
+                 
+                 row.click(function() {
+                     var date = dueDate();
+                     console.log(date);
+                     postRentals({
+                         due_date: date,
+                         copy_id: copy.id,
+                         user_id: user.id,
+                     }, function() {
+                         var message = "Success: book due on " + date;
+                         alert(message);
+                     }, function() {
+                         alert("Failed");
+                     });
+                 });
+
+
+                 table.append(row);
+             });
+         }, function () {
+             $("#stub").remove();
+             var td = $("<td>");
+             td.text("Error loading users");
+             var tr = $("<tr>");
+             tr.append(td);
+
+             var table = $("#users_table");
+             table.append(tr);
          });
      }
     </script>
@@ -177,8 +228,25 @@
           <!-- Copies -->
         </tbody>
       </table>
-      
     </div>
+
+    <div class="container" id="page4">
+      <!-- Search users -->
+      <h1>Users</h1>
+      <table id="users_table" class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Name </th>
+            <th> Id </th>
+          </tr>
+        </thead>
+        <tbody id="users_table">
+          <tr id="stub">
+            <td> <b> Loading... </b> </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> <!-- page4 -->
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
