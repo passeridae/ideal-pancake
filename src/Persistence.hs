@@ -32,6 +32,7 @@ class Monad m => Store t m where
   getAllUsers           :: Conn t -> m [User]
   addBook               :: Conn t -> Book -> m ()
   getBookByIsbn         :: Conn t -> ISBN -> m (Maybe Book)
+  searchBooksByTitle    :: Conn t -> Text -> m [Book]
   getAllBooks           :: Conn t -> m [Book]
   addCopy               :: Conn t -> Copy -> m Bool
   updateCopy            :: Conn t -> InternalId Copy -> Notes -> m ()
@@ -85,6 +86,8 @@ instance Store Postgres IO where
   -- | Books
   addBook           (PGConn pool) book = withResource pool $ \conn -> void $
     execute conn "INSERT into books (isbn,title,authors,publishers,yearOfPublication) VALUES (?,?,?,?,?)" book
+  searchBooksByTitle (PGConn pool) title = withResource pool $ \conn ->
+    query conn "SELECT * FROM books WHERE LOWER (title) LIKE '%' || LOWER (?) || '%'" (Only title)
   getBookByIsbn     (PGConn pool) isbn = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM books WHERE isbn = ?" (Only isbn)
   getAllBooks       (PGConn pool) = withResource pool $ \conn ->

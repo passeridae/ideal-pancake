@@ -48,7 +48,7 @@ server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|> index :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
-    (addBook :<|> getAllBooks :<|> getBookByIsbn) :<|>
+    (addBook :<|> getBooks :<|> getBookByIsbn) :<|>
     (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental)
   )
@@ -107,10 +107,14 @@ addBook book = do
   liftIO $ P.addBook serverStore book
   return NoContent
 
-getAllBooks :: Pancake [Book]
-getAllBooks = do
+getBooks :: Maybe Name -> Pancake [Book]
+getBooks Nothing = do
   ServerConfig{..} <- ask
   liftIO $ P.getAllBooks serverStore
+getBooks (Just (Name searchTerm)) = do
+  ServerConfig{..} <- ask
+  liftIO $ P.searchBooksByTitle serverStore searchTerm
+
 
 getBookByIsbn :: ISBN -> Pancake Book
 getBookByIsbn isbn = do

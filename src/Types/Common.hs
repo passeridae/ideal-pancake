@@ -81,6 +81,9 @@ instance FromHttpApiData Name where
 instance ToParam (QueryParam "name" Name) where
   toParam _ = DocQueryParam "name" [] "name or name fragment to search for" Normal
 
+instance ToParam (QueryParam "title" Name) where
+  toParam _ = DocQueryParam "title" [] "title or title fragment to search for" Normal
+
 --------------------------------------------------------------------------------
 
 -- TagName
