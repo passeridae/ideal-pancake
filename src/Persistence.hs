@@ -31,7 +31,8 @@ class Monad m => Store t m where
   initStore             :: Conn t -> m ()
   addUser               :: Conn t -> User -> m ()
   getUserById           :: Conn t -> InternalId User -> m (Maybe User)
-  getUsersByName        :: Conn t -> Text -> m [User]
+  deleteUser            :: Conn t -> InternalId User -> m ()
+  searchUsersByName     :: Conn t -> Text -> m [User]
   getAllUsers           :: Conn t -> m [User]
   addBook               :: Conn t -> Book -> m ()
   getBookByIsbn         :: Conn t -> ISBN -> m (Maybe Book)
@@ -46,56 +47,12 @@ class Monad m => Store t m where
   getReservationsByIsbn :: Conn t -> ISBN -> m [Reservation]
   getReservationsByUser :: Conn t -> InternalId user -> m [Reservation]
   addTag                :: Conn t -> Tag -> m ()
+  getTags               :: Conn t -> m [Tag]
+  searchTagsByName      :: Conn t -> Text -> m [Tag]
   getTagByName          :: Conn t -> TagName -> m (Maybe Tag)
   addBookTag            :: Conn t -> BookTag -> m ()
   getBooksByTag         :: Conn t -> TagName -> m [ISBN]
 
--- | Example InMemory implementation
-data InMemory
--- | Empty X data decl
-data X
-
-data InMemoryStore = InMemoryStore
-  { users  :: TVar (Map (InternalId User) User)
-  , books  :: TVar (Map ISBN Book)
-  , copies :: TVar (Map ISBN [Copy])
-  }
-
-instance Store InMemory STM where
-  data Conn InMemory = InMemoryVar InMemoryStore
-  data Conf InMemory = X
-
-  -- | No fancy connection stuff required
-  initConnection _ = InMemoryVar <$> (InMemoryStore <$> newTVar mempty <*> newTVar mempty <*> newTVar mempty)
-  destroyConnection _ = pure ()
-  initStore _ = pure ()
-
-  addUser        (InMemoryVar InMemoryStore{..}) user@User{..} = modifyTVar users (M.insert id user)
-  getUserById    (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar users
-  getUsersByName (InMemoryVar InMemoryStore{..}) searchTerm    = filter (\User{name=(Name name)} -> searchTerm `T.isInfixOf` name) . M.elems <$> readTVar users
-  getAllUsers    (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar users
-  addBook        (InMemoryVar InMemoryStore{..}) book          = modifyTVar books (M.insert (isbn book) book)
-  getBookByIsbn  (InMemoryVar InMemoryStore{..}) ident         = M.lookup ident <$> readTVar books
-  getAllBooks    (InMemoryVar InMemoryStore{..})               = M.elems <$> readTVar books
-  addCopy        var@(InMemoryVar InMemoryStore{..}) copy@Copy{..} = do
-    book <- getBookByIsbn var bookIsbn
-    case book of
-      Nothing -> pure False
-      Just _  -> do
-        modifyTVar copies $ M.insertWith (<>) bookIsbn [copy]
-        pure True
-  getCopiesByIsbn       = undefined
-  addRental             = undefined
-  getRental             = undefined
-  getRentalsByCopy      = undefined
-  getRentalsByUser      = undefined
-  addReservation        = undefined 
-  getReservationsByIsbn = undefined 
-  getReservationsByUser = undefined 
-  addTag                = undefined 
-  getTagByName          = undefined 
-  addBookTag            = undefined 
-  getBooksByTag         = undefined 
 
 data Postgres
 
@@ -119,10 +76,12 @@ instance Store Postgres IO where
     void $ execute conn "INSERT into users (name,internalId) VALUES (?,?)" user
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
-  getUsersByName    (PGConn pool) searchTerm = withResource pool $ \conn ->
-    query conn "SELECT * FROM users WHERE ? LIKE '%' || name || '%'" (Only searchTerm)
+  searchUsersByName (PGConn pool) searchTerm = withResource pool $ \conn ->
+    query conn "SELECT * FROM users WHERE name LIKE '%' || ? || '%'" (Only searchTerm)
   getAllUsers       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM users"
+  deleteUser        (PGConn pool) (InternalId userId) = withResource pool $ \conn -> void $
+    execute conn "DELETE FROM users where internalId = ?" (Only userId)
   -- | Books
   addBook           (PGConn pool) book = withResource pool $ \conn -> void $
     execute conn "INSERT into books (isbn,title,authors,publishers,yearOfPublication) VALUES (?,?,?,?,?)" book
@@ -153,10 +112,16 @@ instance Store Postgres IO where
     execute conn "INSERT into tags (tagName, tagNotes) VALUES (?,?)" tag
   getTagByName          (PGConn pool) tagName = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM tags WHERE tagName = ?" (Only tagName)
-  addBookTag            (PGConn pool) booktag = withResource pool $ \conn -> void $
-    execute conn "INSERT into booktags (bookTagId, tagOf, tagName) VALUES (?,?,?)" booktag
+  searchTagsByName      (PGConn pool) searchTerm = withResource pool $ \conn ->
+    query conn "SELECT * FROM tags WHERE tagName ? LIKE '%' || ? || '%'" (Only searchTerm)
+  addBookTag            (PGConn pool) booktag@BookTag{..} = withResource pool $ \conn -> void $ do
+    tr <- getTagByName (PGConn pool) tagName
+    case tr of 
+      Nothing -> addTag (PGConn pool) (Tag tagName Nothing)
+      _ -> return ()
+    execute conn "INSERT into booktags (tagOf, tagName) VALUES (?,?)" booktag
   getBooksByTag         (PGConn pool) tagName = withResource pool $ \conn ->
-    (map (\(BookTag _ isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) 
+    (map (\(BookTag isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) 
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")

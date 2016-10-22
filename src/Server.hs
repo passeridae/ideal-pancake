@@ -47,7 +47,7 @@ api = Proxy
 server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|> index :<|>
-    (addUser :<|> getUsers :<|> getUserById :<|> updateUser :<|> deleteUser) :<|>
+    (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getAllBooks :<|> getBookByIsbn) :<|>
     (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental)
@@ -79,7 +79,7 @@ getUsers Nothing = do
   liftIO $ P.getAllUsers serverStore
 getUsers (Just (Name searchTerm)) = do
   ServerConfig{..} <- ask
-  liftIO $ P.getUsersByName serverStore searchTerm
+  liftIO $ P.searchUsersByName serverStore searchTerm
 
 getUserById :: InternalId User -> Pancake User
 getUserById ident = do
@@ -89,11 +89,13 @@ getUserById ident = do
     Just user -> return user
     Nothing   -> throwError err404
 
-updateUser :: InternalId User -> UpdateUserRequest -> Pancake UpdateUserResponse
-updateUser = error "NYI"
-
 deleteUser :: InternalId User -> Pancake NoContent
-deleteUser = error "NYI"
+deleteUser ident = do
+  ServerConfig{..} <- ask
+  _ <- getUserById ident
+  liftIO $ P.deleteUser serverStore ident
+  return NoContent
+
 
 --------------------------------------------------------------------------------
 

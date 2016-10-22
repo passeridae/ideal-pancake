@@ -109,5 +109,4 @@ instance ToSample UpdateUserResponse where
   toSamples _ = map (updateUserResponseMessage &&& Prelude.id) $ enumFrom minBound
 
 
-
 --------------------------------------------------------------------------------
