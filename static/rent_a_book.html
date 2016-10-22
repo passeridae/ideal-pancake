@@ -11,17 +11,24 @@
       body {
         padding-top: 70px;
       }
+     
+      
 
-      #page2 {
-        visibility: hidden;
-      }
+     #stub1 {
+         visibility: hidden;
+     }
+     #page2 {
+         visibility: hidden;
+     }
     </style>
     <script src="./client.js"></script>
     <script>
-    function searchBooks () {
+     function searchBooks () {
+      $("#stub1").css("visibility", "visible");
       getBooks($("#title_id").val(), function(returned_books) {
-        $("#stub").remove();
-        var table = $("books_table");
+        $("#stub1").remove();
+        var table = $("#books_table");
+        table.empty();
         returned_books.forEach(function(book) {
           var title = $("<td>");
           title.text(book.title);
@@ -90,21 +97,23 @@
 
     </div><!-- /.container -->
 
+    <div id="stub1">
+      <h3> Loading... </h3>
+    </div>
+    
     <!-- TODO: Make invisible before clicking on the above button -->
     <div class="container" id="page2">
       <div class="">
         <h1>Available</h1>
-        <table id="books_table" class="table table-hover table-striped">
+        <table  class="table table-hover table-striped">
           <thead>
             <tr>
               <th> Name </th>
+              <th> Authors </th>
               <th> Id </th>
             </tr>
           </thead>
           <tbody id="books_table">
-            <tr id="stub1">
-              <td> <b> Loading... </b> </td>
-            </tr>
           </tbody>
         </table>
       </div>
