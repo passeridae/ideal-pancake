@@ -73,11 +73,13 @@ type DeleteCopy = "copies" :> Capture "copy_id" (InternalId Copy) :> DeleteNoCon
 
 type Rentals = RentCopy
           :<|> CompleteRental :<|> GetRentalsByUser
+          :<|> GetRentalByCopy
 
 -- Create
 type RentCopy         = "rentals" :> ReqBody '[JSON] RentalRequest :> Post '[JSON] RentalResponse
 -- Read
 type GetRentalsByUser = "rentals" :> Capture "user_id" (InternalId User) :> Get '[JSON] [Rental]
+type GetRentalByCopy  = "rentals" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Rental
 -- Update
 type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRentalRequest :> Post '[JSON] CompleteRentalResponse
 
