@@ -54,6 +54,12 @@
             isbn.text(book.isbn);
 
             var row = $("<tr>");
+            row.css("cursor", "pointer");
+            row.click(function() {
+              openCopies(book);
+            });
+
+            var row = $("<tr>");
             row.append(title);
             row.append(author);
             row.append(isbn);
@@ -71,6 +77,20 @@
           var table = $("#books_table");
           table.append(tr);
         });
+      }
+    </script>
+    <script>
+      function openCopies(book) {
+        $("add_note_container").css("visibility", "visible");
+        var title = "";
+        var author = "";
+        var isbn = "";
+        title.text(book.title);
+        author.text(book.authors.join(' ,'));
+        isbn.text(book.isbn);
+        $("#title_id").var(title);
+        $("#author_id").var(author);
+        $("#isbn_id").var(isbn);
       }
     </script>
   </head>
@@ -109,6 +129,8 @@
             <button onclick="searchBook();" class="btn btn-primary">Submit</button>
           </div>
         </div>
+
+        <br>
 
         <div class="container" id="result_container">
           <h1>Matching Books</h1>
