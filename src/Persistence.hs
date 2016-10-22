@@ -79,7 +79,7 @@ instance Store Postgres IO where
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
   searchUsersByName (PGConn pool) searchTerm = withResource pool $ \conn ->
-    query conn "SELECT * FROM users WHERE name LIKE '%' || ? || '%'" (Only searchTerm)
+    query conn "SELECT * FROM users WHERE LOWER (name) LIKE '%' || LOWER (? || '%'" (Only searchTerm)
   getAllUsers       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM users"
   deleteUser        (PGConn pool) (InternalId userId) = withResource pool $ \conn -> void $
@@ -134,7 +134,7 @@ instance Store Postgres IO where
   getTagByName          (PGConn pool) tagName = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM tags WHERE tagName = ?" (Only tagName)
   searchTagsByName      (PGConn pool) searchTerm = withResource pool $ \conn ->
-    query conn "SELECT * FROM tags WHERE tagName ? LIKE '%' || ? || '%'" (Only searchTerm)
+    query conn "SELECT * FROM tags WHERE LOWER(tagName) LIKE '%' || LOWER(?) || '%'" (Only searchTerm)
   addBookTag            (PGConn pool) booktag@BookTag{..} = withResource pool $ \conn -> void $ do
     tr <- getTagByName (PGConn pool) tagName
     case tr of 
