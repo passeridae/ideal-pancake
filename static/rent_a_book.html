@@ -69,21 +69,30 @@
          table.empty();
          getBooksByBook_isbnCopies(book.isbn, function(copies) {
              copies.forEach(function (copy) {
+                 var row = $("<tr>");
+                 var id  = $("<td>");   id.text(copy.id);       row.append(id);
+                 var notes = $("<td>"); notes.text(copy.notes); row.append(notes);
+                 var available = $("<td>");
                  getRentalsCopyByCopy_id(copy.id, function(rentals) {
-                     var row = $("<tr>");
-                     var id  = $("<td>");   id.text(copy.id);       row.append(id);
-                     var notes = $("<td>"); notes.text(copy.notes); row.append(notes);
-
-                     var isAvailable = rentals.some(function(rent) {
-                         return !rent.returnDate;
-                     });
-                     var available = $("<td>");
-                     if (isAvailable) {
-                         available.text("Available");
-                     } else {
-                         available.text("Not available");
-                     }
+                     available.text("Not available");
                      row.append(available);
+                     table.append(row);
+                 }, function(xhr, status, error) {
+                     if (xhr.status == 404) {
+                         available.text("Available");
+                         row.append(available);
+                         row.click(function() {
+                             getUsers('', function(users) {
+                                 var user = users[0];
+                                 postRentals({
+                                     due_date: "2016-10-22",
+                                     copy_id: copy.id,
+                                     user_id: user.id,
+                                 });
+                             })
+                         });
+                         table.append(row);
+                     }
                  });
              });
          });
