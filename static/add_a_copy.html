@@ -8,26 +8,70 @@
     <link href="amoeba/amoeba/css/bootstrap.css" rel="stylesheet">
 
     <style type="text/css">
-     body { padding-top: 70px; }
+     body {
+       padding-top: 70px;
+     }
+
+     #result_container {
+       visibility: hidden;
+     }
+     #add_note_container {
+       visibility: hidden;
+     }
     </style>
 
     <script src="./client.js"></script>
     <script>
      function addBook () {
          var isbn = $("#isbn_id").val();
-         
+
          var body  = {};
          body["notes"] = $("#notes_id").val();
-         
+
          var onSuccess = function() {
              alert("Success");
          };
          var onFailure = function(jqXHR, textStatus, error) {
              alert("Failure");
          };
-         
+
          postBooksByBook_isbnCopies(isbn, body, onSuccess, onFailure);
      }
+    </script>
+    <script>
+      function searchBook () {
+        $("#result_container").css("visibility", "visible");
+        getBooks($("#search_id").val(), function(returned_books) {
+          $("#result_container").remove();
+          var table = $("#books_table");
+          table.empty();
+          returned_books.forEach(function(book) {
+            var title = $("<td>");
+            title.text(book.title);
+            var author = $("<td>");
+            author.text(book.authors.join(', '));
+            var isbn = $("<td>");
+            isbn.text(book.isbn);
+
+            var row = $("<tr>");
+            row.append(title);
+            row.append(author);
+            row.append(isbn);
+
+            table.append(row);
+          });
+          $("#page2").css("visibility", "visible");
+        }, function () {
+          $("#stub").remove();
+          var td = $("<td>");
+          td.text("Error loading books");
+          var tr = $("<tr>");
+          tr.append(td);
+
+          var table = $("#books_table");
+          table.append(tr);
+        });
+      }
     </script>
   </head>
 
@@ -55,17 +99,54 @@
 
     <div class="container">
       <div class="text-center">
-        <h1>Add a Book</h1>
-        <div class="form-group"> <!-- ISBN field !-->
-          <label for="isbn_id" class="control-label">ISBN</label>
-          <textarea class="form-control" id="isbn_id" name="isbn_name" rows="1"></textarea>
+        <h1>Add a Copy</h1>
+        <div class="container" id="search_container">
+          <div class="form-group">
+            <label for="search_id" class="control-label">Title Search</label>
+            <textarea class="form-control" id="search_id" rows="1"></textarea>
+          </div>
+          <div class="form-group"> <!-- Submit button !-->
+            <button onclick="searchBook();" class="btn btn-primary">Submit</button>
+          </div>
         </div>
-        <div class="form-group"> <!-- ISBN field !-->
-          <label for="notes" class="control-label">Notes</label>
-          <textarea class="form-control" id="notes_id" name="notes" rows="3"></textarea>
+
+        <div class="container" id="result_container">
+          <h1>Matching Books</h1>
+          <table  class="table table-hover table-striped">
+            <thead>
+              <tr>
+                <th> Name </th>
+                <th> Author(s) </th>
+                <th> ISBN </th>
+              </tr>
+            </thead>
+            <tbody id="books_table">
+            </tbody>
+          </table>
         </div>
-        <div class="form-group"> <!-- Submit button !-->
-          <button onclick="addBook();" class="btn btn-primary">Submit</button>
+
+        <!-- TODO: Add on-click capability for this section; onclick needs to add the line's information to the below fields-->
+        <!-- The user can then add notes as desired, and add the book by clicking Submit -->
+        <div class="container" id="add_note_container">
+          <div class="form-group"> <!-- Title field -->
+            <label for="title_id" class="control-label">Title</label>
+            <input type="text" id="title_id" readonly="True">
+          </div>
+          <div class="form-group"> <!-- Author field !-->
+            <label for="author_id" class="control-label">Author(s)</label>
+            <input type="text" id="author_id" readonly="True">
+          </div>
+          <div class="form-group"> <!-- ISBN field !-->
+            <label for="isbn_id" class="control-label">ISBN</label>
+            <input type="text" id="isbn_id" readonly="True">
+          </div>
+          <div class="form-group"> <!-- Notes field !-->
+            <label for="notes" class="control-label">Notes</label>
+            <textarea class="form-control" id="notes_id" rows="3"></textarea>
+          </div>
+          <div class="form-group"> <!-- Submit button !-->
+            <button onclick="addBook();" class="btn btn-primary">Submit</button>
+          </div>
         </div>
       </div>
     </div><!-- /.container -->
