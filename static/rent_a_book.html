@@ -63,17 +63,30 @@
     }
 
      function openCopies(book) {
-         $("#page2").css("visibility", "hidden");
          $("#page3").css("visibility", "visible");
-         
+         $("#book_title").text(book.title);
+         var table = $("#copies_table");
+         table.empty();
          getBooksByBook_isbnCopies(book.isbn, function(copies) {
              copies.forEach(function (copy) {
-                 getRentalsByCopy_id(copy.id, function(rentals) {
+                 getRentalsCopyByCopy_id(copy.id, function(rentals) {
                      var row = $("<tr>");
+                     var id  = $("<td>");   id.text(copy.id);       row.append(id);
+                     var notes = $("<td>"); notes.text(copy.notes); row.append(notes);
 
+                     var isAvailable = rentals.some(function(rent) {
+                         return !rent.returnDate;
+                     });
+                     var available = $("<td>");
+                     if (isAvailable) {
+                         available.text("Available");
+                     } else {
+                         available.text("Not available");
+                     }
+                     row.append(available);
                  });
              });
-         },
+         });
      }
     </script>
 
@@ -151,9 +164,9 @@
             <th> Notes </th>
             <th> Status </th>
         </thead>
-        <thead id="copies_table">
+        <tbody id="copies_table">
           <!-- Copies -->
-        </thead>
+        </tbody>
       </table>
       
     </div>
