@@ -5,12 +5,12 @@
 
 module Server where
 
-import           Control.Concurrent.STM
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
+import           Data.Time
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
 import           Network.Wai
@@ -135,23 +135,66 @@ addCopy isbn acr = do
     AddCopyResponse Nothing False
 
 getCopies :: ISBN -> Pancake [Copy]
-getCopies = error "NYI"
+getCopies isbn = do
+  ServerConfig{..} <- ask
+  liftIO $ P.getCopiesByIsbn serverStore isbn
+
+getCopyById :: InternalId Copy -> Pancake Copy
+getCopyById ident = do
+  ServerConfig{..} <- ask
+  ret <- liftIO $ P.getCopyById serverStore ident
+  case ret of
+    Nothing -> throwError err404
+    Just c -> return c
 
 updateCopy :: InternalId Copy -> UpdateCopyRequest -> Pancake NoContent
-updateCopy = error "NYI"
+updateCopy ident AddCopyRequest{..} = do
+  ServerConfig{..} <- ask
+  liftIO $ P.updateCopy serverStore ident notes
+  return NoContent
+
 
 deleteCopy :: InternalId Copy -> Pancake NoContent
-deleteCopy = error "NYI"
+deleteCopy ident = do
+  ServerConfig{..} <- ask
+  _ <- getCopyById ident
+  liftIO $ P.deleteCopy serverStore ident
+  return NoContent
 
 --------------------------------------------------------------------------------
 
 -- Rentals
 
 rentCopy :: RentalRequest -> Pancake RentalResponse
-rentCopy = error "NYI"
+rentCopy RentalRequest{..} = do
+  ServerConfig{..} <- ask
+  _ <- getCopyById copyId
+  _ <- getUserById userId
+  mRental <- liftIO $ P.getCurrentRentalByCopy serverStore copyId
+  case mRental of
+    Nothing -> do
+      uuid <- liftIO $ InternalId <$> nextRandom
+      liftIO $ P.addRental serverStore (Rental uuid copyId userId dueDate Nothing)
+      return $ RentalResponse (Just uuid) True 
+    Just _ -> return $ RentalResponse Nothing False
 
 completeRental :: CompleteRentalRequest -> Pancake CompleteRentalResponse
-completeRental = error "NYI"
+completeRental CompleteRentalRequest{..} = do
+  ServerConfig{..} <- ask
+  mRental <- liftIO $ P.getRental serverStore rentalId
+  case mRental of
+    Nothing -> return NoSuchRental
+    Just Rental{..} -> case returnDate of
+      Just _ -> return RentalAlreadyComplete
+      Nothing -> do
+        now <- liftIO $ getCurrentTime
+        let nowString = formatTime defaultTimeLocale "%F" now
+        let nowDate = parseTimeM True defaultTimeLocale "%F" nowString
+        case nowDate of
+          Nothing -> throwError err500
+          Just d  -> do
+            liftIO $ P.completeRental serverStore rentalId d
+            return CompleteRentalSuccess
 
 --------------------------------------------------------------------------------
 

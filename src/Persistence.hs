@@ -6,15 +6,11 @@
 
 module Persistence where
 
-import           Control.Concurrent.STM
 import           Control.Monad
 import           Data.FileEmbed
-import           Data.Map                   (Map)
-import qualified Data.Map.Strict            as M
-import           Data.Monoid
 import           Data.Pool
 import           Data.Text                  (Text)
-import qualified Data.Text                  as T
+import           Data.Time
 import           Database.PostgreSQL.Simple
 import           Prelude                    hiding (id)
 
@@ -38,11 +34,15 @@ class Monad m => Store t m where
   getBookByIsbn         :: Conn t -> ISBN -> m (Maybe Book)
   getAllBooks           :: Conn t -> m [Book]
   addCopy               :: Conn t -> Copy -> m Bool
+  updateCopy            :: Conn t -> InternalId Copy -> Notes -> m ()
+  deleteCopy            :: Conn t -> InternalId Copy -> m ()
   getCopiesByIsbn       :: Conn t -> ISBN -> m [Copy]
+  getCopyById           :: Conn t -> InternalId Copy -> m (Maybe Copy)
   addRental             :: Conn t -> Rental -> m ()
   getRental             :: Conn t -> InternalId Rental -> m (Maybe Rental)
   getRentalsByUser      :: Conn t -> InternalId User -> m [Rental]
-  getRentalsByCopy      :: Conn t -> InternalId Copy -> m [Rental]
+  getCurrentRentalByCopy :: Conn t -> InternalId Copy -> m (Maybe Rental)
+  completeRental        :: Conn t -> InternalId Rental -> Day -> m ()
   addReservation        :: Conn t -> Reservation -> m ()
   getReservationsByIsbn :: Conn t -> ISBN -> m [Reservation]
   getReservationsByUser :: Conn t -> InternalId user -> m [Reservation]
@@ -92,16 +92,24 @@ instance Store Postgres IO where
   addCopy           (PGConn pool) copy = withResource pool $ \conn -> do
     _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
     return True
+  updateCopy        (PGConn pool) copyId notes = withResource pool $ \conn -> void $
+    execute conn "UPDATE copies SET copyNotes = ? WHERE copyId = ? " (notes, copyId)
+  deleteCopy        (PGConn pool) copyId = withResource pool $ \conn -> void $
+    execute conn "DELETE FROM copies where copyId = ?" (Only copyId)
   getCopiesByIsbn   (PGConn pool) isbn = withResource pool $ \conn ->
-    query conn "SELECT * FROM copies WHERE copyOf = ? " (Only isbn)
+    query conn "SELECT * FROM copies WHERE copyOf = ?" (Only isbn)
+  getCopyById       (PGConn pool) copyId = withResource pool $ \conn ->
+    safeHead <$> query conn "SELECT * FROM copies WHERE copyId = ?" (Only copyId)
   addRental         (PGConn pool) rental = withResource pool $ \conn -> void $
-    execute conn "INSERT into rentals (rentalId, copyId, userId, returnDate) VALUES (?,?,?,?)" rental
+    execute conn "INSERT into rentals (rentalId, copyId, userId, dueDate, returnDate) VALUES (?,?,?,?,?)" rental
   getRental         (PGConn pool) rentalId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE rentalId = ?" (Only rentalId)
   getRentalsByUser  (PGConn pool) userId = withResource pool $ \conn ->
     query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
-  getRentalsByCopy  (PGConn pool) copyId = withResource pool $ \conn ->
-    query conn "SELECT * FROM rentals WHERE copyId = ?" (Only copyId)
+  getCurrentRentalByCopy (PGConn pool) copyId = withResource pool $ \conn ->
+    safeHead <$> query conn "SELECT * FROM rentals WHERE copyId = ? AND returnDate is NULL" (Only copyId)
+  completeRental (PGConn pool) rentalId returnDate = withResource pool $ \conn -> void $
+    execute conn "UPDATE rentals SET returnDate = ? where rentalId = ?" (returnDate, rentalId)
   addReservation        (PGConn pool) reservation = withResource pool $ \conn -> void $
     execute conn "INSERT into reservations (reservationId, reserveOf, userId, requestDate) VALUES (?,?,?,?)" reservation
   getReservationsByIsbn (PGConn pool) isbn = withResource pool $ \conn -> 
@@ -110,6 +118,8 @@ instance Store Postgres IO where
     query conn "SELECT * FROM reservations WHERE userId = ?" (Only userId)
   addTag                (PGConn pool) tag = withResource pool $ \conn -> void $
     execute conn "INSERT into tags (tagName, tagNotes) VALUES (?,?)" tag
+  getTags               (PGConn pool) = withResource pool $ \conn ->
+    query_ conn "SELECT * FROM tags"
   getTagByName          (PGConn pool) tagName = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM tags WHERE tagName = ?" (Only tagName)
   searchTagsByName      (PGConn pool) searchTerm = withResource pool $ \conn ->
