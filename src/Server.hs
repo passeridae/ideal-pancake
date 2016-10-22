@@ -47,7 +47,7 @@ server conf = staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|> 
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
-    (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
+    (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
   )
 

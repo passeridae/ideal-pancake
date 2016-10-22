@@ -53,6 +53,7 @@ type DeleteBook    = "books" :> Capture "book_isbn" ISBN :> PostNoContent '[JSON
 
 type Copies = AddCopy
          :<|> GetCopies
+         :<|> GetCopyById
          :<|> UpdateCopy
          :<|> DeleteCopy
 
@@ -60,6 +61,7 @@ type Copies = AddCopy
 type AddCopy    = "books"  :> Capture "book_isbn" ISBN :> "copies" :> ReqBody '[JSON] AddCopyRequest :> Post '[JSON] AddCopyResponse
 -- Read
 type GetCopies  = "books"  :> Capture "book_isbn" ISBN :> "copies" :> Get '[JSON] [Copy]
+type GetCopyById = "copies" :> Capture "copy_id" (InternalId Copy) :> Get '[JSON] Copy
 -- Update
 type UpdateCopy = "copies" :> Capture "copy_id" (InternalId Copy) :> ReqBody '[JSON] UpdateCopyRequest :> PostNoContent '[JSON] NoContent
 -- Delete
