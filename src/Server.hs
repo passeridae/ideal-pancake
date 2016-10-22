@@ -50,7 +50,7 @@ server conf = staticFiles :<|> enter (runReaderTNat conf)
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn) :<|>
     (addCopy :<|> getCopies :<|> updateCopy :<|> deleteCopy) :<|>
-    (rentCopy :<|> completeRental)
+    (rentCopy :<|> completeRental :<|> getRentalsByUser)
   )
 
 staticFiles :: Server Raw
@@ -181,6 +181,12 @@ rentCopy RentalRequest{..} = do
       liftIO $ P.addRental serverStore (Rental uuid copyId userId dueDate Nothing)
       return $ RentalResponse (Just uuid) True 
     Just _ -> return $ RentalResponse Nothing False
+
+getRentalsByUser :: InternalId User -> Pancake [Rental]
+getRentalsByUser ident = do
+  ServerConfig{..} <- ask
+  _ <- getUserById ident
+  liftIO $ P.getRentalsByUser serverStore ident
 
 completeRental :: CompleteRentalRequest -> Pancake CompleteRentalResponse
 completeRental CompleteRentalRequest{..} = do

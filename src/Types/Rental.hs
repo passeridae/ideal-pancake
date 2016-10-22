@@ -40,6 +40,14 @@ instance FromRow Rental where
 
 instance ToRow Rental where
   toRow Rental{..} = toRow (id, copyId, userId, dueDate, returnDate)
+
+instance ToSample Rental where
+  toSamples _ = do
+    (internalId, copyId, userId) <- snd <$> toSamples Proxy
+    samples $ map (Rental internalId copyId userId (fromGregorian 2016 11 31)) [Just (fromGregorian 2016 11 31),Nothing]
+
+instance ToJSON Rental where
+  toJSON = genericToJSON defaultAeson
 --------------------------------------------------------------------------------
 
 -- RentCopy

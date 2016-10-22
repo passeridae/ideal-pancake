@@ -69,12 +69,14 @@ type DeleteCopy = "copies" :> Capture "copy_id" (InternalId Copy) :> DeleteNoCon
 -- | Rentals
 
 type Rentals = RentCopy
-          :<|> CompleteRental
+          :<|> CompleteRental :<|> GetRentalsByUser
 
 -- Create
-type RentCopy       = "rentals" :> ReqBody '[JSON] RentalRequest :> Post '[JSON] RentalResponse
+type RentCopy         = "rentals" :> ReqBody '[JSON] RentalRequest :> Post '[JSON] RentalResponse
+-- Read
+type GetRentalsByUser = "rentals" :> Capture "user_id" (InternalId User) :> Get '[JSON] [Rental]
 -- Update
-type CompleteRental = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRentalRequest :> Post '[JSON] CompleteRentalResponse
+type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRentalRequest :> Post '[JSON] CompleteRentalResponse
 
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
