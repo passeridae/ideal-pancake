@@ -36,6 +36,7 @@ startApp :: IO ()
 startApp = do
   conn <- initConn
   P.initStore conn
+  writeDocs
   putStrLn "Server now running"
   run 8080 (app $ ServerConfig conn)
   where
@@ -72,7 +73,13 @@ staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
 serverDocs :: Text
-serverDocs = T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 3)
+serverDocs = T.pack $ markdown $ docsWith (DocOptions 3) [howToRun, howToBuild] mempty (pretty api)
+
+howToRun :: DocIntro
+howToRun = DocIntro "How to run" mempty
+
+howToBuild :: DocIntro
+howToBuild = DocIntro "How to build from source" mempty
 
 serveDocs :: Pancake Text
 serveDocs = return serverDocs
