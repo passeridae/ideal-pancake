@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         webview.loadUrl("http://192.168.0.12:8080/static/add_a_book_m.html");
     }
 
-    public void scanSomething() {
+    public void scanSomething(boolean text) {
         // I need things done!  Do I have any volunteers?
         Intent intent = new Intent("com.google.zxing.client.android.SCAN");
 
@@ -46,8 +46,15 @@ public class MainActivity extends AppCompatActivity {
         // place next time this application is restarted.
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 
-        intent.putExtra("SCAN_MODE", "PRODUCT_MODE");
-        startActivityForResult(intent, 0);
+
+        if (text) {
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+            startActivityForResult(intent, 1);
+        }
+        else {
+            intent.putExtra("SCAN_MODE", "PRODUCT_MODE");
+            startActivityForResult(intent, 0);
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -60,6 +67,22 @@ public class MainActivity extends AppCompatActivity {
                     lookUp(contents);
                 }}).start();
 
+                // Handle successful scan
+            } else if (resultCode == RESULT_CANCELED) {
+                // Handle cancel
+            }
+        }
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                //  The Intents Fairy has delivered us some data!
+                final String contents = intent.getStringExtra("SCAN_RESULT");
+                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+                webview.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        webview.loadUrl("javascript:returnText('"  + contents  +  "')");
+                    }
+                });
                 // Handle successful scan
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
