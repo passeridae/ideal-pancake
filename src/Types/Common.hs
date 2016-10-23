@@ -14,6 +14,7 @@ import           Data.Aeson.Casing
 import           Data.Aeson.Types
 import           Data.String                          hiding (fromString)
 import           Data.Text                            (Text)
+import qualified Data.Text as T
 import           Data.UUID
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple.FromField hiding (name)
@@ -43,7 +44,7 @@ instance ToJSON (InternalId a) where
 
 instance FromJSON (InternalId a) where
   parseJSON = withText "InternalId" $ \x ->
-    case fromText x of
+    case fromText (T.strip x) of
       Nothing -> fail "Invalid UUID"
       Just u  -> return $ InternalId u
 

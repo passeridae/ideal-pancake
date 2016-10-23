@@ -1,3 +1,9 @@
+## How to run
+
+
+## How to build from source
+
+
 ## GET /books
 
 #### Authentication
@@ -226,7 +232,7 @@ Clients must supply the following data
 ```javascript
 [
     {
-        "id": "3180f6a1-ce9a-47f6-9594-2524d227a07f",
+        "id": "6e591b58-3843-4317-b1e9-2119893cc7c6",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     }
@@ -238,12 +244,12 @@ Clients must supply the following data
 ```javascript
 [
     {
-        "id": "3180f6a1-ce9a-47f6-9594-2524d227a07f",
+        "id": "6e591b58-3843-4317-b1e9-2119893cc7c6",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     },
     {
-        "id": "c77c9295-d1c8-4620-be99-beffc91444f0",
+        "id": "9e2c60fb-72f7-4b1c-a47b-1b6e5aba0a30",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     }
@@ -299,7 +305,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "ecf774c9-7c0d-4442-b921-1b28d574b321"
+    "id": "fcf66b73-99f9-4bba-b7e9-0faaeb02bfaf"
 }
 ```
 
@@ -308,7 +314,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "70629fc2-f10d-44a3-875a-1a541d177ceb"
+    "id": "d5a2a3da-0102-430c-9179-de77f63c9fc3"
 }
 ```
 
@@ -366,7 +372,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "6ad379ce-b59b-4348-9151-bbbabccb2b82",
+    "id": "27dc4734-fe60-4b0d-9817-abcd72e67281",
     "book_isbn": "9780060567231",
     "notes": "Damaged back cover"
 }
@@ -376,7 +382,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "6ad379ce-b59b-4348-9151-bbbabccb2b82",
+    "id": "27dc4734-fe60-4b0d-9817-abcd72e67281",
     "book_isbn": "9780060567231",
     "notes": "Coffee stains throughout"
 }
@@ -386,7 +392,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "7e15599f-3200-4ad8-973b-43c61448bbf9",
+    "id": "f07c39e3-1db3-44f2-8e67-37a0a3e52cf6",
     "book_isbn": "9780060567231",
     "notes": "Damaged back cover"
 }
@@ -454,8 +460,8 @@ Clients must supply the following data
 ```javascript
 {
     "due_date": "2016-11-30",
-    "copy_id": "3070cdf7-a4a1-4a0b-b123-062549f61117",
-    "user_id": "9a514db1-6302-41b5-8875-9a27829b6de8"
+    "copy_id": "66b09197-ca21-41ef-9632-778f81c3a4db",
+    "user_id": "887a32de-9584-4516-8fbe-487deb8cbada"
 }
 ```
 
@@ -481,7 +487,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "3ddbee43-2bd8-45a3-94f7-423d60cdfc34"
+    "id": "23735634-de4b-4e9c-9b51-fe3ec71322bc"
 }
 ```
 
@@ -490,7 +496,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "fac59fbf-9d46-4de5-8494-70485fcd6302"
+    "id": "62d0b740-9451-492a-a79b-c72bde253818"
 }
 ```
 
@@ -513,7 +519,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "rental_id": "5a19e701-48c9-4a88-bd92-747051123ffa"
+    "rental_id": "f9c935ba-f6f2-4a14-8e5d-7b9986ec6afe"
 }
 ```
 
@@ -581,9 +587,9 @@ Clients must supply the following data
 {
     "due_date": "2016-11-30",
     "return_date": "2016-11-30",
-    "copy_id": "c9eb64a9-f339-4317-abec-1f0abb3cc262",
-    "id": "b96ddec1-1ee6-42df-aa71-03e3b4167d94",
-    "user_id": "24807aef-5977-41e8-bf5b-63de44235507"
+    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
+    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
+    "user_id": "72c48e51-c707-401f-a891-379ef8ba50f5"
 }
 ```
 
@@ -592,9 +598,9 @@ Clients must supply the following data
 ```javascript
 {
     "due_date": "2016-11-30",
-    "copy_id": "c9eb64a9-f339-4317-abec-1f0abb3cc262",
-    "id": "b96ddec1-1ee6-42df-aa71-03e3b4167d94",
-    "user_id": "24807aef-5977-41e8-bf5b-63de44235507"
+    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
+    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
+    "user_id": "72c48e51-c707-401f-a891-379ef8ba50f5"
 }
 ```
 
@@ -604,9 +610,9 @@ Clients must supply the following data
 {
     "due_date": "2016-11-30",
     "return_date": "2016-11-30",
-    "copy_id": "c9eb64a9-f339-4317-abec-1f0abb3cc262",
-    "id": "b96ddec1-1ee6-42df-aa71-03e3b4167d94",
-    "user_id": "ae4efbfa-8b73-49fd-a44b-ed91b44a5bf4"
+    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
+    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
+    "user_id": "84d2b90c-41ae-4a8a-b03e-367f6d856c2a"
 }
 ```
 
@@ -645,9 +651,9 @@ Clients must supply the following data
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "e8c1ec5c-caea-4963-b04f-9ddf6194aebf",
-        "id": "0140182a-2c52-4ac8-9d62-a749d372d75b",
-        "user_id": "29b49da6-dfeb-4427-8127-b26b093daf2b"
+        "copy_id": "cdeaf270-747a-44cd-a044-8978205ce24c",
+        "id": "ca25373c-dcdf-4a99-bce7-31253b3c3bf3",
+        "user_id": "b2d74671-74d3-4956-af62-3c8d289576e0"
     }
 ]
 ```
@@ -659,16 +665,16 @@ Clients must supply the following data
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "e8c1ec5c-caea-4963-b04f-9ddf6194aebf",
-        "id": "0140182a-2c52-4ac8-9d62-a749d372d75b",
-        "user_id": "29b49da6-dfeb-4427-8127-b26b093daf2b"
+        "copy_id": "cdeaf270-747a-44cd-a044-8978205ce24c",
+        "id": "ca25373c-dcdf-4a99-bce7-31253b3c3bf3",
+        "user_id": "b2d74671-74d3-4956-af62-3c8d289576e0"
     },
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "b16b095a-b72f-443d-989a-abc1a7114700",
-        "id": "ee56637c-b77c-4233-9507-909aa42b6336",
-        "user_id": "887c779b-e65a-4041-96da-65da17816b0e"
+        "copy_id": "a46558e0-aea0-41e9-baab-7c41a176c783",
+        "id": "f6a8d1a5-f032-444e-b42f-5ed840354582",
+        "user_id": "3b082548-a340-4ab2-b451-efe6a0df422c"
     }
 ]
 ```
@@ -710,7 +716,7 @@ Clients must supply the following data
 [
     {
         "name": "Oswyn Brent",
-        "id": "271e5fb4-8e0b-4a96-b8f2-17a7f53d5826"
+        "id": "653e24ea-1840-48f8-bb41-664ed6353fff"
     }
 ]
 ```
@@ -721,11 +727,11 @@ Clients must supply the following data
 [
     {
         "name": "Oswyn Brent",
-        "id": "271e5fb4-8e0b-4a96-b8f2-17a7f53d5826"
+        "id": "653e24ea-1840-48f8-bb41-664ed6353fff"
     },
     {
         "name": "Oswyn Brent",
-        "id": "0bfc1f4b-e2a2-4e4f-aa3a-d95cf3d1bb20"
+        "id": "5758c907-9c59-492d-9692-618f68811662"
     }
 ]
 ```
@@ -766,7 +772,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "0f185427-fa89-4f30-aae4-47fdedb983d4"
+    "id": "c3f9d4b7-062d-4f04-808e-eae805ecb311"
 }
 ```
 
@@ -774,7 +780,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "40c1cc24-42fa-440f-845e-322205529af1"
+    "id": "4e176eae-6d79-4dab-bdfa-d9d0fb855815"
 }
 ```
 
@@ -782,7 +788,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "02fcb7ba-043b-40b7-a16e-86d6eb0d126a"
+    "id": "8738f1fd-5e3e-4772-8f38-f766ce931a1d"
 }
 ```
 
@@ -813,7 +819,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Oswyn Brent",
-    "id": "803c7b5a-c0a8-4405-8bac-9fb43b0e8595"
+    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
 }
 ```
 
@@ -822,7 +828,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Emily Olorin",
-    "id": "803c7b5a-c0a8-4405-8bac-9fb43b0e8595"
+    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
 }
 ```
 
@@ -831,7 +837,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Tristram Healy",
-    "id": "803c7b5a-c0a8-4405-8bac-9fb43b0e8595"
+    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
 }
 ```
 

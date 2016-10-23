@@ -8,9 +8,11 @@ module Server where
 
 import           Control.Concurrent
 import           Control.Exception
+import           Control.Lens
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.ByteString.Char8      as BSC
+import           Data.Monoid
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as T
@@ -22,6 +24,8 @@ import           Network.Wai.Handler.Warp
 import           Prelude                    hiding (id)
 import           Servant
 import           Servant.Docs               hiding (API, notes)
+import           Servant.Docs.Internal      hiding (API)
+import System.IO
 
 import           API
 import           Config
@@ -36,14 +40,14 @@ startApp = do
   conn <- initConn
   P.initStore conn
   writeDocs
-  putStrLn "Server now running"
+  hPutStrLn stderr "Server now running"
   run 8080 (app $ ServerConfig conn)
   where
     initConn :: IO (P.Conn P.Postgres)
     initConn = do
       threadDelay 3000000
       catch (P.initConnection P.defaultPostgres) $ \(_ :: SomeException) -> do
-        putStrLn "Failed to connect to db, retrying"
+        hPutStrLn stderr "Failed to connect to db, retrying"
         initConn
 
 
@@ -69,7 +73,10 @@ staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
 serverDocs :: Text
-serverDocs = T.pack $ markdown $ docsWith (DocOptions 3) [howToRun, howToBuild] mempty (pretty api)
+serverDocs = T.pack $ markdown cleanedDocs
+  where
+    rawDocs = docsWith (DocOptions 3) [howToRun, howToBuild] mempty (pretty api)
+    cleanedDocs = rawDocs & apiEndpoints %~ fmap (\act -> act & authInfo %~ mempty)
 
 howToRun :: DocIntro
 howToRun = DocIntro "How to run" mempty
@@ -176,8 +183,12 @@ getCopyById ident = do
   ServerConfig{..} <- ask
   ret <- liftIO $ P.getCopyById serverStore ident
   case ret of
-    Nothing -> throwError err404
-    Just c  -> return c
+    Nothing -> do
+      liftIO $ hPutStrLn stderr $ "Can't find copy uuid: " <> show ident
+      throwError err404
+    Just c  -> do
+      liftIO $ hPutStrLn stderr $ "Successfully found copy with uuid " <> show ident
+      return c
 
 updateCopy :: InternalId Copy -> UpdateCopyRequest -> Pancake NoContent
 updateCopy ident AddCopyRequest{..} = do

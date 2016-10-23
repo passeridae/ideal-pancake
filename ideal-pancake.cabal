@@ -37,6 +37,7 @@ library
                      , servant-docs
                      , servant-server
                      , http-types
+                     , lens
                      , mtl
                      , network-uri
                      , postgresql-simple
