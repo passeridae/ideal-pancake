@@ -10,6 +10,7 @@ import           Control.Monad.Reader
 import qualified Data.ByteString.Char8     as BSC
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
+import qualified Data.Text.IO              as T
 import           Data.Time
 import           Data.UUID.V4
 import           Network.HTTP.Types.Header
@@ -31,6 +32,7 @@ startApp :: IO ()
 startApp = do
   conn <- P.initConnection P.defaultPostgres
   P.initStore conn
+  putStrLn "Server now running"
   run 8080 (app $ ServerConfig conn)
 
 app :: ServerConfig -> Application
@@ -44,7 +46,7 @@ api = Proxy
 
 server :: ServerConfig -> Server FullAPI
 server conf = staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|> 
+  (serveDocs :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
     (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
@@ -54,8 +56,14 @@ server conf = staticFiles :<|> enter (runReaderTNat conf)
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
+serverDocs :: Text
+serverDocs = T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 3)
+
 serveDocs :: Pancake Text
-serveDocs = return $ T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 2)
+serveDocs = return serverDocs
+
+writeDocs :: IO ()
+writeDocs = T.writeFile "README.md" serverDocs
 
 --------------------------------------------------------------------------------
 
@@ -151,7 +159,7 @@ getCopyById ident = do
   ret <- liftIO $ P.getCopyById serverStore ident
   case ret of
     Nothing -> throwError err404
-    Just c -> return c
+    Just c  -> return c
 
 updateCopy :: InternalId Copy -> UpdateCopyRequest -> Pancake NoContent
 updateCopy ident AddCopyRequest{..} = do
@@ -181,7 +189,7 @@ rentCopy RentalRequest{..} = do
     Nothing -> do
       uuid <- liftIO $ InternalId <$> nextRandom
       liftIO $ P.addRental serverStore (Rental uuid copyId userId dueDate Nothing)
-      return $ RentalResponse (Just uuid) True 
+      return $ RentalResponse (Just uuid) True
     Just _ -> return $ RentalResponse Nothing False
 
 getRentalsByUser :: InternalId User -> Pancake [Rental]
@@ -196,8 +204,8 @@ getRentalByCopy ident = do
   _ <- getCopyById ident
   mRental <- liftIO $ P.getCurrentRentalByCopy serverStore ident
   case mRental of
-    Nothing -> throwError err404
-    Just rental -> return rental    
+    Nothing     -> throwError err404
+    Just rental -> return rental
 
 completeRental :: CompleteRentalRequest -> Pancake CompleteRentalResponse
 completeRental CompleteRentalRequest{..} = do
