@@ -59,11 +59,14 @@ class Monad m => Store t m where
 data Postgres
 
 defaultPostgres :: Conf Postgres
-defaultPostgres = PGConf $ defaultConnectInfo { connectDatabase = "idealpancake" }
+defaultPostgres = PGConf $
+  defaultConnectInfo {
+    connectHost = "db"
+  }
 
 safeHead :: [a] -> Maybe a
 safeHead (x:_) = Just x
-safeHead _ = Nothing
+safeHead _     = Nothing
 
 instance Store Postgres IO where
   data Conn Postgres = PGConn (Pool Connection)
@@ -116,16 +119,16 @@ instance Store Postgres IO where
   getRental         (PGConn pool) rentalId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE rentalId = ?" (Only rentalId)
   getRentalsByUser  (PGConn pool) userId = withResource pool $ \conn ->
-    query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)  
+    query conn "SELECT * FROM rentals WHERE userId = ?" (Only userId)
   getCurrentRentalByCopy (PGConn pool) copyId = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM rentals WHERE copyId = ? AND returnDate is NULL" (Only copyId)
   completeRental (PGConn pool) rentalId returnDate = withResource pool $ \conn -> void $
     execute conn "UPDATE rentals SET returnDate = ? where rentalId = ?" (returnDate, rentalId)
   addReservation        (PGConn pool) reservation = withResource pool $ \conn -> void $
     execute conn "INSERT into reservations (reservationId, reserveOf, userId, requestDate) VALUES (?,?,?,?)" reservation
-  getReservationsByIsbn (PGConn pool) isbn = withResource pool $ \conn -> 
+  getReservationsByIsbn (PGConn pool) isbn = withResource pool $ \conn ->
     query conn "SELECT * FROM reservations WHERE reserveOf = ?" (Only isbn)
-  getReservationsByUser (PGConn pool) userId = withResource pool $ \conn -> 
+  getReservationsByUser (PGConn pool) userId = withResource pool $ \conn ->
     query conn "SELECT * FROM reservations WHERE userId = ?" (Only userId)
   addTag                (PGConn pool) tag = withResource pool $ \conn -> void $
     execute conn "INSERT into tags (tagName, tagNotes) VALUES (?,?)" tag
@@ -137,12 +140,12 @@ instance Store Postgres IO where
     query conn "SELECT * FROM tags WHERE LOWER(tagName) LIKE '%' || LOWER(?) || '%'" (Only searchTerm)
   addBookTag            (PGConn pool) booktag@BookTag{..} = withResource pool $ \conn -> void $ do
     tr <- getTagByName (PGConn pool) tagName
-    case tr of 
+    case tr of
       Nothing -> addTag (PGConn pool) (Tag tagName Nothing)
-      _ -> return ()
+      _       -> return ()
     execute conn "INSERT into booktags (tagOf, tagName) VALUES (?,?)" booktag
   getBooksByTag         (PGConn pool) tagName = withResource pool $ \conn ->
-    (map (\(BookTag isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName) 
+    (map (\(BookTag isbn _) -> isbn)) <$> query conn "SELECT * FROM booktags where tagName = ?" (Only tagName)
 
 initSql :: Query
 initSql = $(embedStringFile "database/db.sql")
