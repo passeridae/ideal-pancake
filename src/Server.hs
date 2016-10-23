@@ -8,7 +8,6 @@ module Server where
 
 import           Control.Concurrent
 import           Control.Exception
-import           Control.Lens
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.ByteString.Char8      as BSC
@@ -24,7 +23,6 @@ import           Network.Wai.Handler.Warp
 import           Prelude                    hiding (id)
 import           Servant
 import           Servant.Docs               hiding (API, notes)
-import           Servant.Docs.Internal      hiding (API)
 import System.IO
 
 import           API
@@ -85,7 +83,7 @@ howToBuild :: DocIntro
 howToBuild = DocIntro "How to build from source"
   [ "If you wish to build from source there are a number of scripts to assist in construction of the docker image."
   , "Run `./scripts/build_base.sh && ./scripts/build.sh` will build the base image, used for building as well as the smaller final image which runs the server"
-  , "There should now be a new `oswynb/ideal-pancake` image on docker, which you can check by running `docker images`.\n You can then bring the server up as previously stated using `docker compose up -d`.
+  , "There should now be a new `oswynb/ideal-pancake` image on docker, which you can check by running `docker images`.\n You can then bring the server up as previously stated using `docker compose up -d`."
   ]
 
 serveDocs :: Pancake Text

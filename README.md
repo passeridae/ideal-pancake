@@ -1,8 +1,17 @@
 ## How to run
 
+The server is run using `docker-compose`. To install docker run `curl -sSL https://get.docker.com/ | sh`. It may require root access
+
+Once docker is installed run: `docker-compose up -d` The server is now serving at localhost on port 8080. To stop the server run `docker-compose down`
 
 ## How to build from source
 
+If you wish to build from source there are a number of scripts to assist in construction of the docker image.
+
+Run `./scripts/build_base.sh && ./scripts/build.sh` will build the base image, used for building as well as the smaller final image which runs the server
+
+There should now be a new `oswynb/ideal-pancake` image on docker, which you can check by running `docker images`.
+ You can then bring the server up as previously stated using `docker compose up -d`.
 
 ## GET /books
 
@@ -232,7 +241,7 @@ Clients must supply the following data
 ```javascript
 [
     {
-        "id": "6e591b58-3843-4317-b1e9-2119893cc7c6",
+        "id": "3a30b665-e6a3-4856-a65c-153c8d41e305",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     }
@@ -244,12 +253,12 @@ Clients must supply the following data
 ```javascript
 [
     {
-        "id": "6e591b58-3843-4317-b1e9-2119893cc7c6",
+        "id": "3a30b665-e6a3-4856-a65c-153c8d41e305",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     },
     {
-        "id": "9e2c60fb-72f7-4b1c-a47b-1b6e5aba0a30",
+        "id": "8fe289e3-2adf-462a-a97f-64d72844d1c9",
         "book_isbn": "9780060567231",
         "notes": "Damaged back cover"
     }
@@ -305,7 +314,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "fcf66b73-99f9-4bba-b7e9-0faaeb02bfaf"
+    "id": "8f93590a-c357-4bd6-b543-f4358c2f9e05"
 }
 ```
 
@@ -314,7 +323,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "d5a2a3da-0102-430c-9179-de77f63c9fc3"
+    "id": "2d2f3e47-3256-4d5b-ae32-de6c8f4da806"
 }
 ```
 
@@ -372,7 +381,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "27dc4734-fe60-4b0d-9817-abcd72e67281",
+    "id": "c253914f-0ca9-4a6b-95f3-247f7f2a7e56",
     "book_isbn": "9780060567231",
     "notes": "Damaged back cover"
 }
@@ -382,7 +391,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "27dc4734-fe60-4b0d-9817-abcd72e67281",
+    "id": "c253914f-0ca9-4a6b-95f3-247f7f2a7e56",
     "book_isbn": "9780060567231",
     "notes": "Coffee stains throughout"
 }
@@ -392,7 +401,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "f07c39e3-1db3-44f2-8e67-37a0a3e52cf6",
+    "id": "e3471fea-f2f8-4f9e-9b69-abb984da9d2e",
     "book_isbn": "9780060567231",
     "notes": "Damaged back cover"
 }
@@ -460,8 +469,8 @@ Clients must supply the following data
 ```javascript
 {
     "due_date": "2016-11-30",
-    "copy_id": "66b09197-ca21-41ef-9632-778f81c3a4db",
-    "user_id": "887a32de-9584-4516-8fbe-487deb8cbada"
+    "copy_id": "15bc95e4-48e4-4d47-8d38-316d0c1e6724",
+    "user_id": "df0264d7-444e-4927-add9-bddf555489f6"
 }
 ```
 
@@ -487,7 +496,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "23735634-de4b-4e9c-9b51-fe3ec71322bc"
+    "id": "1ebf14e3-1da0-4533-937b-fa553bed5437"
 }
 ```
 
@@ -496,7 +505,7 @@ Clients must supply the following data
 ```javascript
 {
     "successful": true,
-    "id": "62d0b740-9451-492a-a79b-c72bde253818"
+    "id": "77d8f2de-13ea-4402-9ac7-ac93ac276f0d"
 }
 ```
 
@@ -519,7 +528,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "rental_id": "f9c935ba-f6f2-4a14-8e5d-7b9986ec6afe"
+    "rental_id": "13a35070-e0ee-41c6-9fd4-39591e4cc362"
 }
 ```
 
@@ -587,9 +596,9 @@ Clients must supply the following data
 {
     "due_date": "2016-11-30",
     "return_date": "2016-11-30",
-    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
-    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
-    "user_id": "72c48e51-c707-401f-a891-379ef8ba50f5"
+    "copy_id": "92db7122-222e-46ac-b7a9-f66cf9296c5a",
+    "id": "375495c3-cf3b-447d-a407-7fbafba7bf90",
+    "user_id": "3b8e1dce-147f-43e0-a7ea-c2f3199e8185"
 }
 ```
 
@@ -598,9 +607,9 @@ Clients must supply the following data
 ```javascript
 {
     "due_date": "2016-11-30",
-    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
-    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
-    "user_id": "72c48e51-c707-401f-a891-379ef8ba50f5"
+    "copy_id": "92db7122-222e-46ac-b7a9-f66cf9296c5a",
+    "id": "375495c3-cf3b-447d-a407-7fbafba7bf90",
+    "user_id": "3b8e1dce-147f-43e0-a7ea-c2f3199e8185"
 }
 ```
 
@@ -610,9 +619,9 @@ Clients must supply the following data
 {
     "due_date": "2016-11-30",
     "return_date": "2016-11-30",
-    "copy_id": "7fccd199-bff6-418a-a42c-5013d36c2105",
-    "id": "ccbf03c8-23fe-4736-9949-bb319e6ab238",
-    "user_id": "84d2b90c-41ae-4a8a-b03e-367f6d856c2a"
+    "copy_id": "92db7122-222e-46ac-b7a9-f66cf9296c5a",
+    "id": "375495c3-cf3b-447d-a407-7fbafba7bf90",
+    "user_id": "07dd7c9a-607a-471c-882a-c8bc9bdbd35e"
 }
 ```
 
@@ -651,9 +660,9 @@ Clients must supply the following data
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "cdeaf270-747a-44cd-a044-8978205ce24c",
-        "id": "ca25373c-dcdf-4a99-bce7-31253b3c3bf3",
-        "user_id": "b2d74671-74d3-4956-af62-3c8d289576e0"
+        "copy_id": "af04cb02-8d8b-4eb7-8383-51d0e2e6fc89",
+        "id": "2a269d3f-9a0d-491b-b26d-469b00845c37",
+        "user_id": "793586e6-4cc4-4c2e-b19d-756a1c9671f3"
     }
 ]
 ```
@@ -665,16 +674,16 @@ Clients must supply the following data
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "cdeaf270-747a-44cd-a044-8978205ce24c",
-        "id": "ca25373c-dcdf-4a99-bce7-31253b3c3bf3",
-        "user_id": "b2d74671-74d3-4956-af62-3c8d289576e0"
+        "copy_id": "af04cb02-8d8b-4eb7-8383-51d0e2e6fc89",
+        "id": "2a269d3f-9a0d-491b-b26d-469b00845c37",
+        "user_id": "793586e6-4cc4-4c2e-b19d-756a1c9671f3"
     },
     {
         "due_date": "2016-11-30",
         "return_date": "2016-11-30",
-        "copy_id": "a46558e0-aea0-41e9-baab-7c41a176c783",
-        "id": "f6a8d1a5-f032-444e-b42f-5ed840354582",
-        "user_id": "3b082548-a340-4ab2-b451-efe6a0df422c"
+        "copy_id": "1297c80a-6a33-4e92-9f1d-fdcd9fc5e8c7",
+        "id": "14f75db9-d8da-4a21-a93b-d33503511ffc",
+        "user_id": "85860fba-daeb-4e0a-9026-813c7956bf36"
     }
 ]
 ```
@@ -716,7 +725,7 @@ Clients must supply the following data
 [
     {
         "name": "Oswyn Brent",
-        "id": "653e24ea-1840-48f8-bb41-664ed6353fff"
+        "id": "de843781-f9f7-482e-b87f-6a0731928c4e"
     }
 ]
 ```
@@ -727,11 +736,11 @@ Clients must supply the following data
 [
     {
         "name": "Oswyn Brent",
-        "id": "653e24ea-1840-48f8-bb41-664ed6353fff"
+        "id": "de843781-f9f7-482e-b87f-6a0731928c4e"
     },
     {
         "name": "Oswyn Brent",
-        "id": "5758c907-9c59-492d-9692-618f68811662"
+        "id": "a4328cbc-457e-41e5-8d86-7c688af6c3fd"
     }
 ]
 ```
@@ -772,7 +781,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "c3f9d4b7-062d-4f04-808e-eae805ecb311"
+    "id": "1d12797e-7d42-4f7c-9473-736406241176"
 }
 ```
 
@@ -780,7 +789,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "4e176eae-6d79-4dab-bdfa-d9d0fb855815"
+    "id": "418f6f08-1da8-4a26-aa6e-9d60320e8c89"
 }
 ```
 
@@ -788,7 +797,7 @@ Clients must supply the following data
 
 ```javascript
 {
-    "id": "8738f1fd-5e3e-4772-8f38-f766ce931a1d"
+    "id": "cdf3cd04-57c0-471f-a65f-95de78fbc695"
 }
 ```
 
@@ -819,7 +828,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Oswyn Brent",
-    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
+    "id": "2f39c235-76b9-4480-8cd6-2346f22608f1"
 }
 ```
 
@@ -828,7 +837,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Emily Olorin",
-    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
+    "id": "2f39c235-76b9-4480-8cd6-2346f22608f1"
 }
 ```
 
@@ -837,7 +846,7 @@ Clients must supply the following data
 ```javascript
 {
     "name": "Tristram Healy",
-    "id": "865f54c0-49b6-42ee-8dea-0b7a96202a4f"
+    "id": "2f39c235-76b9-4480-8cd6-2346f22608f1"
 }
 ```
 

@@ -99,9 +99,9 @@ instance Store Postgres IO where
   deleteBook        (PGConn pool) isbn = do
       copies  <- getCopiesByIsbn (PGConn pool) isbn
       forM_ copies $ \Copy{..} -> do
-        withResource pool $ \conn -> execute conn "DELETE FROM rentals WHERE copyId = ?" (Only id)
-        withResource pool $ \conn -> execute conn "DELETE FROM copies  WHERE copyId = ?" (Only id)
-      withResource pool $ \conn -> execute conn "DELETE FROM books where bookId = ?" (Only isbn)
+        _ <- withResource pool $ \conn -> execute conn "DELETE FROM rentals WHERE copyId = ?" (Only id)
+        _ <- withResource pool $ \conn -> execute conn "DELETE FROM copies  WHERE copyId = ?" (Only id)
+        withResource pool $ \conn -> execute conn "DELETE FROM books where bookId = ?" (Only isbn)
       return ()
   addCopy           (PGConn pool) copy = withResource pool $ \conn -> do
     _ <- execute conn "INSERT into copies (copyId, copyOf, copyNotes) VALUES (?,?,?)" copy
