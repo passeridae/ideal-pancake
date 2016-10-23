@@ -1,11 +1,15 @@
 version: '2'
 services:
   server:
-    image: oswynb/ideal-pancake
+    image: oswynb/ideal-pancake:latest
     ports:
       - "8080:8080"
     depends_on:
       - db
+    links:
+      - db
+    volumes:
+      - ./static:/run/static
   db:
     image: postgres
     ports:

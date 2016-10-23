@@ -2,27 +2,31 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 module Server where
 
+import           Control.Concurrent
+import           Control.Exception
 import           Control.Monad.Except
 import           Control.Monad.Reader
-import qualified Data.ByteString.Char8     as BSC
-import           Data.Text                 (Text)
-import qualified Data.Text                 as T
-import qualified Data.Text.IO              as T
+import qualified Data.ByteString.Char8      as BSC
+import           Data.Text                  (Text)
+import qualified Data.Text                  as T
+import qualified Data.Text.IO               as T
 import           Data.Time
 import           Data.UUID.V4
+import           Database.PostgreSQL.Simple
 import           Network.HTTP.Types.Header
 import           Network.Wai
 import           Network.Wai.Handler.Warp
-import           Prelude                   hiding (id)
+import           Prelude                    hiding (id)
 import           Servant
-import           Servant.Docs              hiding (API, notes)
+import           Servant.Docs               hiding (API, notes)
 
 import           API
 import           Config
-import qualified Persistence               as P
+import qualified Persistence                as P
 import           Types
 
 
@@ -30,10 +34,18 @@ type Pancake = ReaderT ServerConfig (ExceptT ServantErr IO)
 
 startApp :: IO ()
 startApp = do
-  conn <- P.initConnection P.defaultPostgres
+  conn <- initConn
   P.initStore conn
   putStrLn "Server now running"
   run 8080 (app $ ServerConfig conn)
+  where
+    initConn :: IO (P.Conn P.Postgres)
+    initConn = do
+      threadDelay 3000000
+      catch (P.initConnection P.defaultPostgres) $ \(e :: SomeException) -> do
+        putStrLn "Failed to connect to db, retrying"
+        initConn
+
 
 app :: ServerConfig -> Application
 app conf = serve fullApi (server conf)
@@ -45,13 +57,16 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = staticFiles :<|> enter (runReaderTNat conf)
+server conf = index :<|> staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
     (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
   )
+
+index :: Server Raw
+index = serveDirectory "static/index_page.html"
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
