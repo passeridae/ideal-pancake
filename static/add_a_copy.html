@@ -21,77 +21,6 @@
        visibility: hidden;
      }
     </style>
-
-    <script src="./client.js"></script>
-    <script>
-     function addBook () {
-         var isbn = $("#isbn_id").val();
-
-         var body  = {};
-         body["notes"] = $("#notes_id").val();
-
-         var onSuccess = function() {
-             alert("Success");
-         };
-         var onFailure = function(jqXHR, textStatus, error) {
-             alert("Failure");
-         };
-
-         postBooksByBook_isbnCopies(isbn, body, onSuccess, onFailure);
-     }
-    </script>
-    <script>
-      function searchBook () {
-        $("#stub1").css("visibility", "visible");
-        getBooks($("#search_id").val(), function(returned_books) {
-          $("#stub1").remove();
-          var table = $("#books_table");
-          table.empty();
-          returned_books.forEach(function(book) {
-            var title = $("<td>");
-            title.text(book.title);
-            var author = $("<td>");
-            author.text(book.authors.join(', '));
-            var isbn = $("<td>");
-            isbn.text(book.isbn);
-
-            var row = $("<tr>");
-            row.css("cursor", "pointer");
-            row.click(function() {
-              openCopies(book);
-            });
-
-            row.append(title);
-            row.append(author);
-            row.append(isbn);
-
-            table.append(row);
-          });
-          $("#result_container").css("visibility", "visible");
-        }, function () {
-          $("#stub1").remove();
-          $("#result_container").css("visibility", "visible");
-          var td = $("<td>");
-          td.text("Error loading books");
-          var tr = $("<tr>");
-          tr.append(td);
-
-          var table = $("#books_table");
-          table.append(tr);
-        });
-      }
-    </script>
-    <script>
-      function openCopies(book) {
-        $("#add_note_container").css("visibility", "visible");
-        var title = book.title;
-        var author = book.authors.join(' ,');
-        var isbn = book.isbn;
-        $("#title_id").attr("value", title);
-        $("#author_id").attr("value", author);
-        $("#isbn_id").attr("value", isbn);
-      }
-    </script>
   </head>
 
   <body>
@@ -171,13 +100,80 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
+    <script src="./client.js"></script>
     <script>
+     function addBook () {
+         var isbn = $("#isbn_id").val();
+
+         var body  = {};
+         body["notes"] = $("#notes_id").val();
+
+         var onSuccess = function() {
+             alert("Success");
+         };
+         var onFailure = function(jqXHR, textStatus, error) {
+             alert("Failure");
+         };
+
+         postBooksByBook_isbnCopies(isbn, body, onSuccess, onFailure);
+     }
+
+      function searchBook () {
+        $("#stub1").css("visibility", "visible");
+        getBooks($("#search_id").val(), function(returned_books) {
+          $("#stub1").remove();
+          var table = $("#books_table");
+          table.empty();
+          returned_books.forEach(function(book) {
+            var title = $("<td>");
+            title.text(book.title);
+            var author = $("<td>");
+            author.text(book.authors.join(', '));
+            var isbn = $("<td>");
+            isbn.text(book.isbn);
+
+            var row = $("<tr>");
+            row.css("cursor", "pointer");
+            row.click(function() {
+              openCopies(book);
+            });
+
+            row.append(title);
+            row.append(author);
+            row.append(isbn);
+
+            table.append(row);
+          });
+          $("#result_container").css("visibility", "visible");
+        }, function () {
+          $("#stub1").remove();
+          $("#result_container").css("visibility", "visible");
+          var td = $("<td>");
+          td.text("Error loading books");
+          var tr = $("<tr>");
+          tr.append(td);
+
+          var table = $("#books_table");
+          table.append(tr);
+        });
+      }
+
+      function openCopies(book) {
+        $("#add_note_container").css("visibility", "visible");
+        var title = book.title;
+        var author = book.authors.join(' ,');
+        var isbn = book.isbn;
+        $("#title_id").attr("value", title);
+        $("#author_id").attr("value", author);
+        $("#isbn_id").attr("value", isbn);
+      }
+
     // Prevent newlines in textarea
     $('textarea').keypress(function(e){
        if (e.keyCode == 13) return false;
     });
     </script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
   </body>
 </html>
