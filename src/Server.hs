@@ -8,21 +8,24 @@ module Server where
 
 import           Control.Concurrent
 import           Control.Exception
+import           Control.Lens
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.ByteString.Char8      as BSC
+import           Data.Monoid
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as T
 import           Data.Time
 import           Data.UUID.V4
-import           Database.PostgreSQL.Simple
 import           Network.HTTP.Types.Header
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Prelude                    hiding (id)
 import           Servant
 import           Servant.Docs               hiding (API, notes)
+import           Servant.Docs.Internal      hiding (API)
+import System.IO
 
 import           API
 import           Config
@@ -36,14 +39,15 @@ startApp :: IO ()
 startApp = do
   conn <- initConn
   P.initStore conn
-  putStrLn "Server now running"
+  writeDocs
+  hPutStrLn stderr "Server now running"
   run 8080 (app $ ServerConfig conn)
   where
     initConn :: IO (P.Conn P.Postgres)
     initConn = do
       threadDelay 3000000
-      catch (P.initConnection P.defaultPostgres) $ \(e :: SomeException) -> do
-        putStrLn "Failed to connect to db, retrying"
+      catch (P.initConnection P.defaultPostgres) $ \(_ :: SomeException) -> do
+        hPutStrLn stderr "Failed to connect to db, retrying"
         initConn
 
 
@@ -57,22 +61,28 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = index :<|> staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|>
+server conf = (enter (runReaderTNat conf)
+  (serveDocs :<|> redirectToLanding :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
     (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
-  )
-
-index :: Server Raw
-index = serveDirectory "static/index_page.html"
+  )) :<|> staticFiles
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
 
 serverDocs :: Text
-serverDocs = T.pack $ markdown $ docsWithOptions (pretty api) (DocOptions 3)
+serverDocs = T.pack $ markdown cleanedDocs
+  where
+    rawDocs = docsWith (DocOptions 3) [howToRun, howToBuild] mempty (pretty api)
+    cleanedDocs = rawDocs & apiEndpoints %~ fmap (\act -> act & authInfo %~ [DocAuthentication "foo" "bar"])
+
+howToRun :: DocIntro
+howToRun = DocIntro "How to run" mempty
+
+howToBuild :: DocIntro
+howToBuild = DocIntro "How to build from source" mempty
 
 serveDocs :: Pancake Text
 serveDocs = return serverDocs
@@ -173,8 +183,12 @@ getCopyById ident = do
   ServerConfig{..} <- ask
   ret <- liftIO $ P.getCopyById serverStore ident
   case ret of
-    Nothing -> throwError err404
-    Just c  -> return c
+    Nothing -> do
+      liftIO $ hPutStrLn stderr $ "Can't find copy uuid: " <> show ident
+      throwError err404
+    Just c  -> do
+      liftIO $ hPutStrLn stderr $ "Successfully found copy with uuid " <> show ident
+      return c
 
 updateCopy :: InternalId Copy -> UpdateCopyRequest -> Pancake NoContent
 updateCopy ident AddCopyRequest{..} = do
@@ -247,5 +261,9 @@ completeRental CompleteRentalRequest{..} = do
 redirectToDocs :: Pancake a
 redirectToDocs = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
                  in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+
+redirectToLanding :: Pancake a
+redirectToLanding = let redirectURI = "/static/landing_page.html"
+                    in throwError $ err301{errHeaders=(hLocation, redirectURI):errHeaders err301}
 
 --------------------------------------------------------------------------------

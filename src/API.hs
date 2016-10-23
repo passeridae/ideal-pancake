@@ -10,7 +10,7 @@ import           Text.Blaze.Html5
 
 import           Types
 
-type FullAPI = Index :<|> StaticFiles :<|> (Docs :<|> API)
+type FullAPI = (Docs :<|> Index :<|> API) :<|> StaticFiles
 type API = Users :<|> Books :<|> Copies :<|> Rentals
 
 --------------------------------------------------------------------------------
@@ -86,4 +86,4 @@ type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRenta
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
 type StaticFiles = "static" :> Raw
-type Index = Raw
+type Index = Get '[HTML] Text

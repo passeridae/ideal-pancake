@@ -67,7 +67,7 @@
              table.append(tr);
          });
      }
-
+            
      // When a user clicks on a book. Show the availbe copies.
      function openCopies(book) {
          $("#page3").show();
@@ -104,10 +104,9 @@
          $("#page2").hide();
          $("#page3").hide();
          $("#page4").show();
-
+         
          getUsers("", function(users, _status, _jqXHR) {
              var table = $("#users_table");
-             table.empty();
              users.forEach(function (user, i, _arr) {
                  var name = $("<td>");
                  name.text(user.name);
@@ -127,9 +126,6 @@
                          user_id: user.id,
                      }, function() {
                          var message = "Success: book due on " + date;
-                         $("#page1").show();
-                         $("#page4").hide();
-                         
                          alert(message);
                      }, function() {
                          alert("Failed");
@@ -171,6 +167,9 @@
       <div class="text-center">
         <h1>Rental</h1>
 
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="scanCopy();" class="btn btn-primary">Scan Copy</button>
+        </div>
         <div class="form-group"> <!-- Title field !-->
           <label for="title_id" class="control-label">Book Title</label>
           <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
@@ -181,17 +180,19 @@
       </div>
 
     </div><!-- /.container -->
-
+    
     <!-- TODO: Make invisible before clicking on the above button -->
     <div class="container" id="page2">
       <div class="">
-        <h1>Available</h1>
+        <h1>Copy Details</h1>
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="scanUser();" class="btn btn-primary">Scan and Loan to User</button>
+        </div>
         <table  class="table table-hover table-striped">
           <thead>
             <tr>
-              <th> Name </th>
-              <th> Authors </th>
-              <th> Id </th>
+              <th> Title </th>
+              <th> Copy Notes </th>
             </tr>
           </thead>
           <tbody id="books_table">
@@ -200,24 +201,6 @@
         </table>
       </div>
     </div><!-- /.container -->
-
-    <!-- TODO: Make this visible after "rent" button is pressed-->
-    <div class="container" id="page3">
-      <h1>Copies</h1>
-      <h3 id="book_title">book_title</h3>
-
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th> Id </th>
-            <th> Notes </th>
-            <th> Status </th>
-        </thead>
-        <tbody id="copies_table">
-          <!-- Copies -->
-        </tbody>
-      </table>
-    </div><!-- page3 -->
 
     <div class="container" id="page4">
       <!-- Search users -->
@@ -237,13 +220,58 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>
-    // Prevent newlines in textarea
-    $('textarea').keypress(function(e){
-       if (e.keyCode == 13) return false;
-    });
-    </script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
+    <script>
+      function scanCopy () {
+        cb = returnCopy;
+        Android.scanText();
+      }
+      var cb;
+      function returnText (t) {
+        cb (t);
+      }
+      function scanUser () {
+        cb = returnUser;
+        Android.scanText();
+      }
+
+      var copyId;
+
+      function returnUser (t) {
+        var date = dueDate();
+        postRentals({
+          due_date: date,
+          copy_id: copyId,
+          user_id: t,
+          }, function() {
+          var message = "Success: book due on " + date;
+          alert(message);
+          }, function() {
+          alert("Failed");
+        });
+        
+      }
+
+      function returnCopy (t){
+        copyId = t;
+        getCopiesByCopy_id (t, function (copy) {
+          getBooksByBook_isbn (copy.book_isbn, function (book) {
+          var table = $("#books_table");
+          table.empty();
+          var title = $("<td>");
+          title.text (book.title);
+          var copyNotes = $("<td>");
+          copyNotes.text (copy.notes);
+          var row = $("<tr>");
+          row.append(title);
+          row.append(copyNotes);
+          table.append(row);
+          $("#page2").show();
+          }, function () { alert ("failure");});
+        }, function (e) { alert ("Error: " +  e);});
+      }
+
+    </script>
   </body>
 </html>
