@@ -82,7 +82,7 @@ instance Store Postgres IO where
   getUserById       (PGConn pool) (InternalId internalId) = withResource pool $ \conn ->
     safeHead <$> query conn "SELECT * FROM users WHERE internalId = ?" (Only internalId)
   searchUsersByName (PGConn pool) searchTerm = withResource pool $ \conn ->
-    query conn "SELECT * FROM users WHERE LOWER (name) LIKE '%' || LOWER (? || '%'" (Only searchTerm)
+    query conn "SELECT * FROM users WHERE LOWER (name) LIKE '%' || LOWER (?) || '%'" (Only searchTerm)
   getAllUsers       (PGConn pool) = withResource pool $ \conn ->
     query_ conn "SELECT * FROM users"
   deleteUser        (PGConn pool) (InternalId userId) = withResource pool $ \conn -> void $
