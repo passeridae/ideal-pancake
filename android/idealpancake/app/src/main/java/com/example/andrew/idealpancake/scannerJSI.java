@@ -17,7 +17,12 @@ public class scannerJSI {
     }
     @JavascriptInterface
     public void scanSomething() {
-        mainActivity.scanSomething();
+        mainActivity.scanSomething(false);
+    }
+
+    @JavascriptInterface
+    public void scanText () {
+        mainActivity.scanSomething(true);
     }
 
     @JavascriptInterface
