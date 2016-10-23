@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap -->
+    <link href="amoeba/amoeba/css/bootstrap.css" rel="stylesheet">
+
+    <style type="text/css">
+      body {
+        padding-top: 70px;
+      }
+
+     #page2 {
+         display: none;
+     }
+     #page3 {
+         display: none;
+     }
+     #page4 {
+         display: none;
+     }
+    </style>
+    <script src="./client.js"></script>
+    <script src="./client_util.js"></script>
+    <script>
+     // Get the date two weeks from now.
+     function dueDate() {
+         var inTwoWeeks = new Date(+new Date + 12096e5).toISOString().replace(/T.*/, '');
+         console.log("Due date: " + inTwoWeeks);
+         return inTwoWeeks;
+     }
+
+     // When a user types in a book title. Print all books that mach that title.
+     function searchBooks () {
+         getBooks($("#title_id").val(), function(returned_books) {
+             var table = $("#books_table");
+             table.empty();
+             returned_books.forEach(function(book) {
+                 var row = $("<tr>");
+                 var title = $("<td>");
+                 title.text(book.title);
+                 var author = $("<td>");
+                 author.text(book.authors.join(', '));
+                 var isbn = $("<td>");
+                 isbn.text(book.isbn);
+
+                 row.css("cursor", "pointer");
+                 row.click(function() {
+                     openCopies(book);
+                 });
+
+                 row.append(title);
+                 row.append(author);
+                 row.append(isbn);
+                 table.append(row);
+             });
+             $("#page2").show();
+         }, function () {
+             var td = $("<td>");
+             td.text("Error loading books");
+             var tr = $("<tr>");
+             tr.append(td);
+
+             var table = $("#books_table");
+             table.append(tr);
+         });
+     }
+            
+     // When a user clicks on a book. Show the availbe copies.
+     function openCopies(book) {
+         $("#page3").show();
+         $("#book_title").text(book.title);
+         var table = $("#copies_table");
+         table.empty();
+         getBooksByBook_isbnCopies(book.isbn, function(copies) {
+             copies.forEach(function (copy) {
+                 var row = $("<tr>");
+                 var id  = $("<td>");   id.text(copy.id);       row.append(id);
+                 var notes = $("<td>"); notes.text(copy.notes); row.append(notes);
+                 var available = $("<td>");
+                 getRentalsCopyByCopy_id(copy.id, function(rentals) {
+                     available.text("Not available");
+                     row.append(available);
+                     table.append(row);
+                 }, function(xhr, status, error) {
+                     if (xhr.status == 404) {
+                         available.text("Available");
+                         row.append(available);
+                         row.click(function() {
+                             selectUser(copy);
+                         });
+                         table.append(row);
+                     }
+                 });
+             });
+         });
+     }
+
+     // When clicked on a Available book. Show user search.
+     function selectUser(copy) {
+         $("#page1").hide();
+         $("#page2").hide();
+         $("#page3").hide();
+         $("#page4").show();
+         
+         getUsers("", function(users, _status, _jqXHR) {
+             var table = $("#users_table");
+             users.forEach(function (user, i, _arr) {
+                 var name = $("<td>");
+                 name.text(user.name);
+                 var id = $("<td>");
+                 id.text(user.id);
+
+                 var row = $("<tr>");
+                 row.append(name);
+                 row.append(id);
+
+                 row.click(function() {
+                     var date = dueDate();
+                     console.log(date);
+                     postRentals({
+                         due_date: date,
+                         copy_id: copy.id,
+                         user_id: user.id,
+                     }, function() {
+                         var message = "Success: book due on " + date;
+                         alert(message);
+                     }, function() {
+                         alert("Failed");
+                     });
+                 });
+
+                 table.append(row);
+             });
+         }, function () {
+             var td = $("<td>");
+             td.text("Error loading users");
+             var tr = $("<tr>");
+             tr.append(td);
+
+             var table = $("#users_table");
+             table.append(tr);
+         });
+     }
+    </script>
+
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="http://ideal-pancake.xyz:8080/">Ideal Pancake</a>
+            </div>
+      </div>
+    </div>
+
+    <div class="container" id="page1">
+
+      <div class="text-center">
+        <h1>Rental</h1>
+
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="scanCopy();" class="btn btn-primary">Scan Copy</button>
+        </div>
+        <div class="form-group"> <!-- Title field !-->
+          <label for="title_id" class="control-label">Book Title</label>
+          <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
+        </div>
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="searchBooks();" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+    
+    <!-- TODO: Make invisible before clicking on the above button -->
+    <div class="container" id="page2">
+      <div class="">
+        <h1>Copy Details</h1>
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="scanUser();" class="btn btn-primary">Scan and Loan to User</button>
+        </div>
+        <table  class="table table-hover table-striped">
+          <thead>
+            <tr>
+              <th> Title </th>
+              <th> Copy Notes </th>
+            </tr>
+          </thead>
+          <tbody id="books_table">
+            <!-- Books table injected here. -->
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.container -->
+
+    <div class="container" id="page4">
+      <!-- Search users -->
+      <h1>Users</h1>
+      <table id="users_table" class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Name </th>
+            <th> Id </th>
+          </tr>
+        </thead>
+        <tbody id="users_table">
+          <!-- Users -->
+        </tbody>
+      </table>
+    </div> <!-- page4 -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
+    <script>
+      function scanCopy () {
+        cb = returnCopy;
+        Android.scanText();
+      }
+      var cb;
+      function returnText (t) {
+        cb (t);
+      }
+      function scanUser () {
+        cb = returnUser;
+        Android.scanText();
+      }
+
+      var copyId;
+
+      function returnUser (t) {
+        var date = dueDate();
+        postRentals({
+          due_date: date,
+          copy_id: copyId,
+          user_id: t,
+          }, function() {
+          var message = "Success: book due on " + date;
+          alert(message);
+          }, function() {
+          alert("Failed");
+        });
+        
+      }
+
+      function returnCopy (t){
+        copyId = t;
+        getCopiesByCopy_id (t, function (copy) {
+          getBooksByBook_isbn (copy.book_isbn, function (book) {
+          var table = $("#books_table");
+          table.empty();
+          var title = $("<td>");
+          title.text (book.title);
+          var copyNotes = $("<td>");
+          copyNotes.text (copy.notes);
+          var row = $("<tr>");
+          row.append(title);
+          row.append(copyNotes);
+          table.append(row);
+          $("#page2").show();
+          }, function () { alert ("failure");});
+        }, function (e) { alert ("Error: " +  e);});
+      }
+
+    </script>
+  </body>
+</html>
