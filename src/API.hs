@@ -86,4 +86,4 @@ type CompleteRental   = "rentals" :> "complete" :> ReqBody '[JSON] CompleteRenta
 -- | Extra
 type Docs  = "docs.md" :> Get '[PlainText] Text
 type StaticFiles = "static" :> Raw
-type Index = Raw
+type Index = "/" :> Raw
