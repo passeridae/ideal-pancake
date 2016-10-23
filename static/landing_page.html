@@ -10,7 +10,6 @@
     <style type="text/css">
       body { padding-top: 70px; }
     </style>
-    <script src="./client.js"></script>
   </head>
 
   <body>
@@ -27,56 +26,25 @@
       </div>
     </div>
 
-
     <div class="container">
-      <div class="">
-        <h1>Books</h1>
-        <table id="books_id" class="table table-hover table-striped">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Authors</th>
-              <th>Publishers</th>
-              <th>Date Of Publication</th>
-              <th>ISBN</th>
-            </tr>
-          </thead>
-          <tbody id=books_table_body_id>
-          </tbody>
-        </table>
+      <div class="text-center">
+        <h1>Welcome to Ideal Pancake</h1>
+
+        <base href="http://ideal-pancake.xyz:8080/"/>
+        <a class="navbar" href="/static/rent_a_book.html">Rent a Book</a>
+        <a class="navbar" href="/static/return_book.html">Return a Book</a>
+        <a class="navbar" href="/static/list_books.html">List Books</a>
+        <a class="navbar" href="/static/add_a_book.html">Add a Book</a>
+        <a class="navbar" href="/static/add_a_copy.html">Add a Copy</a>
+        <a class="navbar" href="/static/show_users.html">Show Users</a>
+
       </div>
     </div><!-- /.container -->
 
+    <script src="./client.js"></script>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
-    <script>
-      function renderBooks () {
-        getBooks (function (d) {
-          var btbid = $("#books_table_body_id");
-          for (var i = 0; i < d.length; i++) {
-            var tr = $("<tr>");
-            var td = $("<td>");
-            td.text(d[i]["title"]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["authors"][0]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["publishers"][0]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["date_of_publication"]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["isbn"]);
-            tr.append(td);
-            btbid.append(tr);
-          }
-        }, function () {alert("Failure") });
-      }
-      renderBooks();
-    </script>
   </body>
 </html>
