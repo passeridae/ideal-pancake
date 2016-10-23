@@ -21,82 +21,7 @@
        visibility: hidden;
      }
     </style>
-    <script src="./client.js"></script>
-    <script>
-     function searchUsers () {
-      $("#stub1").css("visibility", "visible");
-      getUsers($("#user_id").val(), function(returned_users) {
-        $("#stub1").remove();
-        var table = $("#users_table");
-        table.empty();
-        returned_users.forEach(function(user) {
-          var name = $("<td>");
-          name.text(user.name);
-          var id = $("<td>");
-          id.text(user.id);
-          var row = $("<tr>");
-          row.click(function () {
-            findRentals(user);
-            $("#page3").css("visibility", "visible");
-          });
-          row.append(name);
-          row.append(id);
-          table.append(row);
-        });
-        $("#page2").css("visibility", "visible");
-      }, function () {
-        $("#stub").remove();
-        $("#page2").css("visibility", "visible");
-        var td = $("<td>");
-        td.text("Error loading books");
-        var tr = $("<tr>");
-        tr.append(td);
-
-        var table = $("#books_table");
-        table.append(tr);
-      });
-    }
-
-    function findTitle (title, rental) {
-      getCopiesByCopy_id(rental.copy_id,function (copy) {
-        getBooksByBook_isbn(copy.book_isbn, function (book) {
-          title.text(book.title);
-        }, function () {alert("failure");});
-        }, function () {
-        alert("failure");
-      });
-    }
-
-    function findRentals (user) {
-      getRentalsUserByUser_id(user.id, function (rentals) {
-        var targets = filterRentals(rentals);
-        var table = $("#rental_table");
-        table.empty();
-        targets.forEach(function(rental) {
-          var title = $("<td>");
-          title.text("loading");
-          findTitle(title,rental);
-          var dueDate = $("<td>");
-          dueDate.text(rental.due_date);
-          var id = $("<td>");
-          id.text(rental.copy_id);
-          var row = $("<tr>");
-          row.click(function () {
-            returnRental(rental);
-          });
-          row.append(title);
-          row.append(id);
-          row.append(dueDate);
-          table.append(row);
-        });
-
-        }, function () {
-        alert("Failure");
-      });
-    }
-    </script>
-
-  </head>
+   </head>
 
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -174,30 +99,102 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
+
+    <script src="./client.js"></script>
+    <script>
+     function searchUsers () {
+         $("#stub1").css("visibility", "visible");
+         getUsers($("#user_id").val(), function(returned_users) {
+             $("#stub1").remove();
+             var table = $("#users_table");
+             table.empty();
+             returned_users.forEach(function(user) {
+                 var name = $("<td>");
+                 name.text(user.name);
+                 var id = $("<td>");
+                 id.text(user.id);
+                 var row = $("<tr>");
+                 row.click(function () {
+                     findRentals(user);
+                     $("#page3").css("visibility", "visible");
+                 });
+                 row.append(name);
+                 row.append(id);
+                 table.append(row);
+             });
+             $("#page2").css("visibility", "visible");
+         }, function () {
+             $("#stub").remove();
+             $("#page2").css("visibility", "visible");
+             var td = $("<td>");
+             td.text("Error loading books");
+             var tr = $("<tr>");
+             tr.append(td);
+
+             var table = $("#books_table");
+             table.append(tr);
+         });
+     }
+
+     function findTitle (title, rental) {
+         getCopiesByCopy_id(rental.copy_id,function (copy) {
+             getBooksByBook_isbn(copy.book_isbn, function (book) {
+                 title.text(book.title);
+             }, function () {alert("failure");});
+         }, function () {
+             alert("failure");
+         });
+     }
+
+     function findRentals (user) {
+         getRentalsUserByUser_id(user.id, function (rentals) {
+             var targets = filterRentals(rentals);
+             var table = $("#rental_table");
+             table.empty();
+             targets.forEach(function(rental) {
+                 var title = $("<td>");
+                 title.text("loading");
+                 findTitle(title,rental);
+                 var dueDate = $("<td>");
+                 dueDate.text(rental.due_date);
+                 var id = $("<td>");
+                 id.text(rental.copy_id);
+                 var row = $("<tr>");
+                 row.click(function () {
+                     returnRental(rental, function() {
+                         findRentals(user);
+                     });
+                 });
+                 row.append(title);
+                 row.append(id);
+                 row.append(dueDate);
+                 table.append(row);
+             });
+
+         }, function () {
+             alert("Failure");
+         });
+     }
+
+     function filterRentals (rentals) {
+         var ret = [];
+         for (var i = 0; i < rentals.length; i++) {
+             if (!("return_date" in rentals[i]))
+                 ret.push(rentals[i]);
+         }
+         return ret;
+     }
+
+     function returnRental (rental, after) {
+         postRentalsComplete ({"rental_id" : rental.id}, function () {
+             alert("Success");
+             after();
+         }, function () {
+             alert("Failure");
+             after();
+         });
+     }
+     
+    </script>
   </body>
 </html>
-<script>
-
-  function filterRentals (rentals) {
-    var ret = [];
-    for (var i = 0; i < rentals.length; i++) {
-      if (!("return_date" in rentals[i]))
-        ret.push(rentals[i]);
-    }
-    return ret;
-  }
-
-  function returnRental (rental) {
-    postRentalsComplete ({"rental_id" : rental.id}, function () {
-        alert("Success");
-      }, function () {
-        alert("Failure");
-      });
-  }
-
-  // Prevent newlines in textarea
-  $('textarea').keypress(function(e){
-     if (e.keyCode == 13) return false;
-  });
-
-</script>
