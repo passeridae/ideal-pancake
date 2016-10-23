@@ -12,33 +12,29 @@
         padding-top: 70px;
       }
 
-     #stub1 {
-         visibility: hidden;
-     }
      #page2 {
-         visibility: hidden;
+         display: none;
      }
      #page3 {
-         visibility: hidden;
+         display: none;
+     }
+     #page4 {
+         display: none;
      }
     </style>
     <script src="./client.js"></script>
+    <script src="./client_util.js"></script>
     <script>
+     // Get the date two weeks from now.
      function dueDate() {
-         // magic from stack overflow
-         return '2016-11-08';
-
-         var fortnightAway = new Date(+new Date + 12096e5);
-         var day = fortnightAway.getDate();
-         var month = fortnightAway.getMonth() + 1;
-         var year = fortnightAway.getFullYear();
-         return year + '-' + month + '-' + day;
+         var inTwoWeeks = new Date(+new Date + 12096e5).toISOString().replace(/T.*/, '');
+         console.log("Due date: " + inTwoWeeks);
+         return inTwoWeeks;
      }
 
+     // When a user types in a book title. Print all books that mach that title.
      function searchBooks () {
-         $("#stub1").css("visibility", "visible");
          getBooks($("#title_id").val(), function(returned_books) {
-             $("#stub1").remove();
              var table = $("#books_table");
              table.empty();
              returned_books.forEach(function(book) {
@@ -60,9 +56,8 @@
                  row.append(isbn);
                  table.append(row);
              });
-             $("#page2").css("visibility", "visible");
+             $("#page2").show();
          }, function () {
-             $("#stub").remove();
              var td = $("<td>");
              td.text("Error loading books");
              var tr = $("<tr>");
@@ -72,9 +67,10 @@
              table.append(tr);
          });
      }
-
+            
+     // When a user clicks on a book. Show the availbe copies.
      function openCopies(book) {
-         $("#page3").css("visibility", "visible");
+         $("#page3").show();
          $("#book_title").text(book.title);
          var table = $("#copies_table");
          table.empty();
@@ -102,11 +98,13 @@
          });
      }
 
+     // When clicked on a Available book. Show user search.
      function selectUser(copy) {
          $("#page1").hide();
          $("#page2").hide();
          $("#page3").hide();
-
+         $("#page4").show();
+         
          getUsers("", function(users, _status, _jqXHR) {
              var table = $("#users_table");
              users.forEach(function (user, i, _arr) {
@@ -134,11 +132,9 @@
                      });
                  });
 
-
                  table.append(row);
              });
          }, function () {
-             $("#stub").remove();
              var td = $("<td>");
              td.text("Error loading users");
              var tr = $("<tr>");
@@ -181,11 +177,7 @@
       </div>
 
     </div><!-- /.container -->
-
-    <div id="stub1">
-      <h3> Loading... </h3>
-    </div>
-
+    
     <!-- TODO: Make invisible before clicking on the above button -->
     <div class="container" id="page2">
       <div class="">
@@ -221,7 +213,7 @@
           <!-- Copies -->
         </tbody>
       </table>
-    </div>
+    </div><!-- page3 -->
 
     <div class="container" id="page4">
       <!-- Search users -->
@@ -234,9 +226,7 @@
           </tr>
         </thead>
         <tbody id="users_table">
-          <tr id="stub">
-            <td> <b> Loading... </b> </td>
-          </tr>
+          <!-- Users -->
         </tbody>
       </table>
     </div> <!-- page4 -->
