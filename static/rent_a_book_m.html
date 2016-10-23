@@ -159,6 +159,13 @@
               </button>
               <a class="navbar-brand" href="http://ideal-pancake.xyz:8080/">Ideal Pancake</a>
             </div>
+            <div class="collapse navbar-collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="./add_a_book_m.html">Add a Book</a></li>
+                <li class="active"><a href="./rent_a_book_m.html">Rent a Book</a></li>
+                <li><a href="./return_book_m.html">Return a Book</a></li>
+              </ul>
+            </div><!--/.nav-collapse -->
       </div>
     </div>
 
@@ -169,13 +176,6 @@
 
         <div class="form-group"> <!-- Submit button !-->
           <button onclick="scanCopy();" class="btn btn-primary">Scan Copy</button>
-        </div>
-        <div class="form-group"> <!-- Title field !-->
-          <label for="title_id" class="control-label">Book Title</label>
-          <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
-        </div>
-        <div class="form-group"> <!-- Submit button !-->
-          <button onclick="searchBooks();" class="btn btn-primary">Submit</button>
         </div>
       </div>
 

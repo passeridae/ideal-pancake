@@ -22,6 +22,96 @@
          display: none;
      }
     </style>
+
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">Ideal Pancake</a>
+            </div>
+      </div>
+    </div>
+
+    <div class="container" id="page1">
+
+      <div class="text-center">
+        <h1>Rental</h1>
+
+        <div class="form-group"> <!-- Title field !-->
+          <label for="title_id" class="control-label">Book Title</label>
+          <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
+        </div>
+        <div class="form-group"> <!-- Submit button !-->
+          <button onclick="searchBooks();" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+
+    <!-- TODO: Make invisible before clicking on the above button -->
+    <div class="container" id="page2">
+      <div class="">
+        <h1>Available</h1>
+        <table  class="table table-hover table-striped">
+          <thead>
+            <tr>
+              <th> Name </th>
+              <th> Authors </th>
+              <th> Id </th>
+            </tr>
+          </thead>
+          <tbody id="books_table">
+            <!-- Books table injected here. -->
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.container -->
+
+    <!-- TODO: Make this visible after "rent" button is pressed-->
+    <div class="container" id="page3">
+      <h1>Copies</h1>
+      <h3 id="book_title">book_title</h3>
+
+      <table class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Id </th>
+            <th> Notes </th>
+            <th> Status </th>
+        </thead>
+        <tbody id="copies_table">
+          <!-- Copies -->
+        </tbody>
+      </table>
+    </div><!-- page3 -->
+
+    <div class="container" id="page4">
+      <!-- Search users -->
+      <h1>Users</h1>
+      <table id="users_table" class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Name </th>
+            <th> Id </th>
+          </tr>
+        </thead>
+        <tbody id="users_table">
+          <!-- Users -->
+        </tbody>
+      </table>
+    </div> <!-- page4 -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
     <script src="./client.js"></script>
     <script src="./client_util.js"></script>
     <script>
@@ -129,7 +219,7 @@
                          var message = "Success: book due on " + date;
                          $("#page1").show();
                          $("#page4").hide();
-                         
+
                          alert(message);
                      }, function() {
                          alert("Failed");
@@ -148,102 +238,11 @@
              table.append(tr);
          });
      }
-    </script>
 
-  </head>
-
-  <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="http://ideal-pancake.xyz:8080/">Ideal Pancake</a>
-            </div>
-      </div>
-    </div>
-
-    <div class="container" id="page1">
-
-      <div class="text-center">
-        <h1>Rental</h1>
-
-        <div class="form-group"> <!-- Title field !-->
-          <label for="title_id" class="control-label">Book Title</label>
-          <textarea class="form-control" id="title_id" name="title_name" rows="1"></textarea>
-        </div>
-        <div class="form-group"> <!-- Submit button !-->
-          <button onclick="searchBooks();" class="btn btn-primary">Submit</button>
-        </div>
-      </div>
-
-    </div><!-- /.container -->
-
-    <!-- TODO: Make invisible before clicking on the above button -->
-    <div class="container" id="page2">
-      <div class="">
-        <h1>Available</h1>
-        <table  class="table table-hover table-striped">
-          <thead>
-            <tr>
-              <th> Name </th>
-              <th> Authors </th>
-              <th> Id </th>
-            </tr>
-          </thead>
-          <tbody id="books_table">
-            <!-- Books table injected here. -->
-          </tbody>
-        </table>
-      </div>
-    </div><!-- /.container -->
-
-    <!-- TODO: Make this visible after "rent" button is pressed-->
-    <div class="container" id="page3">
-      <h1>Copies</h1>
-      <h3 id="book_title">book_title</h3>
-
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th> Id </th>
-            <th> Notes </th>
-            <th> Status </th>
-        </thead>
-        <tbody id="copies_table">
-          <!-- Copies -->
-        </tbody>
-      </table>
-    </div><!-- page3 -->
-
-    <div class="container" id="page4">
-      <!-- Search users -->
-      <h1>Users</h1>
-      <table id="users_table" class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th> Name </th>
-            <th> Id </th>
-          </tr>
-        </thead>
-        <tbody id="users_table">
-          <!-- Users -->
-        </tbody>
-      </table>
-    </div> <!-- page4 -->
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>
     // Prevent newlines in textarea
     $('textarea').keypress(function(e){
        if (e.keyCode == 13) return false;
     });
     </script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
   </body>
 </html>

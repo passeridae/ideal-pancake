@@ -8,9 +8,14 @@
     <link href="amoeba/amoeba/css/bootstrap.css" rel="stylesheet">
 
     <style type="text/css">
-      body { padding-top: 70px; }
+      body {
+        padding-top: 70px;
+      }
+
+     #copies_page {
+         display: none;
+     }
     </style>
-    <script src="./client.js"></script>
   </head>
 
   <body>
@@ -22,13 +27,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="http://ideal-pancake.xyz:8080/">Ideal Pancake</a>
+              <a class="navbar-brand" href="/">Ideal Pancake</a>
             </div>
       </div>
     </div>
 
-
-    <div class="container">
+    
+    <div id="books_page" class="container">
       <div class="">
         <h1>Books</h1>
         <table id="books_id" class="table table-hover table-striped">
@@ -47,36 +52,91 @@
       </div>
     </div><!-- /.container -->
 
+    <div id="copies_page" class="container">
+      <h1>Copies</h1>
+      <h3 id="book_title">book_title</h3>
+
+      <table class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th> Id </th>
+            <th> Notes </th>
+            <th> Status </th>
+        </thead>
+        <tbody id="copies_table">
+          <!-- Copies -->
+        </tbody>
+      </table>
+    </div><!-- page3 -->
+
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
+    <script src="./client.js"></script>
     <script>
-      function renderBooks () {
-        getBooks ("",function (d) {
-          var btbid = $("#books_table_body_id");
-          for (var i = 0; i < d.length; i++) {
-            var tr = $("<tr>");
-            var td = $("<td>");
-            td.text(d[i]["title"]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["authors"][0]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["publishers"][0]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["date_of_publication"]);
-            tr.append(td);
-            td = $("<td>");
-            td.text(d[i]["isbn"]);
-            tr.append(td);
-            btbid.append(tr);
-          }
-        }, function () {alert("Failure") });
-      }
-      renderBooks();
+     function renderBooks () {
+         getBooks ("",function (books) {
+             var btbid = $("#books_table_body_id");
+             books.forEach(function (book) {
+                 var tr = $("<tr>");
+                 var td = $("<td>");
+                 td.text(book["title"]);
+                 tr.append(td);
+                 td = $("<td>");
+                 td.text(book["authors"][0]);
+                 tr.append(td);
+                 td = $("<td>");
+                 td.text(book["publishers"][0]);
+                 tr.append(td);
+                 td = $("<td>");
+                 td.text(book["date_of_publication"]);
+                 tr.append(td);
+                 td = $("<td>");
+                 td.text(book["isbn"]);
+                 tr.append(td);
+                 tr.css("cursor", "pointer");
+                 tr.click(function () {
+                     renderCopies(book);
+                 });
+                 btbid.append(tr);
+             });
+         }, function () {alert("Failed to fetch list of books") });
+     }
+
+     function renderCopies(book) {
+         console.log(book);
+         getBooksByBook_isbnCopies(book['isbn'], function(copies) {
+             /* Success */
+             $("#books_page").hide();
+             $("#book_title").text(book.title);
+             $("#copies_page").show();
+
+             var table = $("#copies_table");
+             table.empty();
+             copies.forEach(function (copy) {
+                 var row = $("<tr>");
+                 var id  = $("<td>");   id.text(copy.id);       row.append(id);
+                 var notes = $("<td>"); notes.text(copy.notes); row.append(notes);
+                 var available = $("<td>");
+                 row.append(available);
+                 table.append(row);
+
+                 getRentalsCopyByCopy_id(copy.id, function(rentals) {
+                     available.text("Not available");
+                 }, function(xhr, status, error) {
+                     if (xhr.status == 404) {
+                         available.text("Available");
+                     }
+                 });
+             });
+         }, function() {
+             alert("Failed to fetch copies of that book");
+         });
+     }
+     
+     $(document).ready(renderBooks);
     </script>
   </body>
 </html>
