@@ -68,11 +68,8 @@
          });
      }
 
-     var glob_lastBook = null;
-     
      // When a user clicks on a book. Show the availbe copies.
      function openCopies(book) {
-         glob_lastBook = book;
          $("#page3").show();
          $("#book_title").text(book.title);
          var table = $("#copies_table");
