@@ -66,7 +66,7 @@ server conf = index :<|> staticFiles :<|> enter (runReaderTNat conf)
   )
 
 index :: Server Raw
-index = serveDirectory "static/index_page.html"
+index = serveDirectory "static/landing_page.html"
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
