@@ -67,9 +67,12 @@
              table.append(tr);
          });
      }
-            
+
+     var glob_lastBook = null;
+     
      // When a user clicks on a book. Show the availbe copies.
      function openCopies(book) {
+         glob_lastBook = book;
          $("#page3").show();
          $("#book_title").text(book.title);
          var table = $("#copies_table");
@@ -107,6 +110,7 @@
          
          getUsers("", function(users, _status, _jqXHR) {
              var table = $("#users_table");
+             table.empty();
              users.forEach(function (user, i, _arr) {
                  var name = $("<td>");
                  name.text(user.name);
@@ -126,6 +130,9 @@
                          user_id: user.id,
                      }, function() {
                          var message = "Success: book due on " + date;
+                         $("#page1").show();
+                         $("#page4").hide();
+                         
                          alert(message);
                      }, function() {
                          alert("Failed");
