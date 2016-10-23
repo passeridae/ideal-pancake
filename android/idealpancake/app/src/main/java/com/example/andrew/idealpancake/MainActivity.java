@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         webview.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (Uri.parse(url).getHost().equals("192.168.0.12")) {
+                if (Uri.parse(url).getHost().equals("ideal-pancake.xyz")) {
                     return false;
                 } else {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        webview.loadUrl("http://192.168.0.12:8080/static/add_a_book_m.html");
+        webview.loadUrl("http://ideal-pancake.xyz:8080/static/add_a_book_m.html");
     }
 
     public void scanSomething(boolean text) {
