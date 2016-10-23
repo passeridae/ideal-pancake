@@ -53,7 +53,7 @@
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
     <script>
       function renderBooks () {
-        getBooks (function (d) {
+        getBooks ("",function (d) {
           var btbid = $("#books_table_body_id");
           for (var i = 0; i < d.length; i++) {
             var tr = $("<tr>");

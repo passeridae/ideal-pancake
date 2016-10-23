@@ -57,13 +57,16 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = staticFiles :<|> enter (runReaderTNat conf)
+server conf = index :<|> staticFiles :<|> enter (runReaderTNat conf)
   (serveDocs :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
     (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
   )
+
+index :: Server Raw
+index = serveDirectory "static/landing_page.html"
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"

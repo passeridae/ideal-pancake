@@ -8,6 +8,8 @@ services:
       - db
     links:
       - db
+    volumes:
+      - ./static:/run/static
   db:
     image: postgres
     ports:
