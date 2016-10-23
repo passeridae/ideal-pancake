@@ -76,7 +76,7 @@ serverDocs :: Text
 serverDocs = T.pack $ markdown cleanedDocs
   where
     rawDocs = docsWith (DocOptions 3) [howToRun, howToBuild] mempty (pretty api)
-    cleanedDocs = rawDocs & apiEndpoints %~ fmap (\act -> act & authInfo %~ mempty)
+    cleanedDocs = rawDocs & apiEndpoints %~ fmap (\act -> act & authInfo %~ [DocAuthentication "foo" "bar"])
 
 howToRun :: DocIntro
 howToRun = DocIntro "How to run" mempty
