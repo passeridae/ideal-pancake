@@ -107,6 +107,7 @@
 
          getUsers("", function(users, _status, _jqXHR) {
              var table = $("#users_table");
+             table.empty();
              users.forEach(function (user, i, _arr) {
                  var name = $("<td>");
                  name.text(user.name);
@@ -126,6 +127,9 @@
                          user_id: user.id,
                      }, function() {
                          var message = "Success: book due on " + date;
+                         $("#page1").show();
+                         $("#page4").hide();
+                         
                          alert(message);
                      }, function() {
                          alert("Failed");
