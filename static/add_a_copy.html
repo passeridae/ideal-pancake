@@ -89,7 +89,7 @@
           </div>
           <div class="form-group"> <!-- Notes field !-->
             <label for="notes" class="control-label">Notes</label>
-            <textarea class="form-control" id="notes_id" rows="3"></textarea>
+            <textarea class="form-control" id="notes_id" rows="1"></textarea>
           </div>
           <div class="form-group"> <!-- Submit button !-->
             <button onclick="addBook();" class="btn btn-primary">Submit</button>
@@ -111,6 +111,7 @@
          body["notes"] = $("#notes_id").val();
 
          var onSuccess = function() {
+             $("#notes_id").val('');
              alert("Success");
          };
          var onFailure = function(jqXHR, textStatus, error) {
