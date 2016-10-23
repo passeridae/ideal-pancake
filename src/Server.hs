@@ -16,7 +16,6 @@ import qualified Data.Text                  as T
 import qualified Data.Text.IO               as T
 import           Data.Time
 import           Data.UUID.V4
-import           Database.PostgreSQL.Simple
 import           Network.HTTP.Types.Header
 import           Network.Wai
 import           Network.Wai.Handler.Warp
@@ -42,7 +41,7 @@ startApp = do
     initConn :: IO (P.Conn P.Postgres)
     initConn = do
       threadDelay 3000000
-      catch (P.initConnection P.defaultPostgres) $ \(e :: SomeException) -> do
+      catch (P.initConnection P.defaultPostgres) $ \(_ :: SomeException) -> do
         putStrLn "Failed to connect to db, retrying"
         initConn
 
@@ -57,16 +56,13 @@ api :: Proxy API
 api = Proxy
 
 server :: ServerConfig -> Server FullAPI
-server conf = index :<|> staticFiles :<|> enter (runReaderTNat conf)
-  (serveDocs :<|>
+server conf = (enter (runReaderTNat conf)
+  (serveDocs :<|> redirectToLanding :<|>
     (addUser :<|> getUsers :<|> getUserById :<|> deleteUser) :<|>
     (addBook :<|> getBooks :<|> getBookByIsbn :<|> deleteBook) :<|>
     (addCopy :<|> getCopies :<|> getCopyById  :<|> updateCopy :<|> deleteCopy) :<|>
     (rentCopy :<|> completeRental :<|> getRentalsByUser :<|> getRentalByCopy)
-  )
-
-index :: Server Raw
-index = serveDirectory "static/landing_page.html"
+  )) :<|> staticFiles
 
 staticFiles :: Server Raw
 staticFiles = serveDirectory "static"
@@ -247,5 +243,9 @@ completeRental CompleteRentalRequest{..} = do
 redirectToDocs :: Pancake a
 redirectToDocs = let redirectURI = safeLink fullApi (Proxy :: Proxy Docs)
                  in throwError $ err301{errHeaders=(hLocation, BSC.pack $ show redirectURI):errHeaders err301}
+
+redirectToLanding :: Pancake a
+redirectToLanding = let redirectURI = "/static/landing_page.html"
+                    in throwError $ err301{errHeaders=(hLocation, redirectURI):errHeaders err301}
 
 --------------------------------------------------------------------------------
