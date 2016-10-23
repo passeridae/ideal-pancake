@@ -67,7 +67,7 @@
              table.append(tr);
          });
      }
-            
+
      // When a user clicks on a book. Show the availbe copies.
      function openCopies(book) {
          $("#page3").show();
@@ -104,7 +104,7 @@
          $("#page2").hide();
          $("#page3").hide();
          $("#page4").show();
-         
+
          getUsers("", function(users, _status, _jqXHR) {
              var table = $("#users_table");
              users.forEach(function (user, i, _arr) {
@@ -177,7 +177,7 @@
       </div>
 
     </div><!-- /.container -->
-    
+
     <!-- TODO: Make invisible before clicking on the above button -->
     <div class="container" id="page2">
       <div class="">
@@ -233,6 +233,12 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>
+    // Prevent newlines in textarea
+    $('textarea').keypress(function(e){
+       if (e.keyCode == 13) return false;
+    });
+    </script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="amoeba/amoeba/js/bootstrap.min.js"></script>
   </body>
